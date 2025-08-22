@@ -1,0 +1,18 @@
+
+<div class="profile-container" *ngIf="user">
+	<div class="profile-header">
+		<img [src]="user.avatarUrl || ('https://ui-avatars.com/api/?name=' + user.name)" alt="Avatar" class="avatar" />
+		<div>
+			<h2>{{ user.name }}</h2>
+			<p>{{ user.email }}</p>
+			<span>Joined: {{ user.joined | date }}</span>
+		</div>
+	</div>
+		<div class="profile-bio" *ngIf="user.bio">
+			<h4>Bio</h4>
+			<p>{{ user.bio }}</p>
+	</div>
+</div>
+<div *ngIf="!user">
+	<p>User not found.</p>
+</div>

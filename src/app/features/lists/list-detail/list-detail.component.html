@@ -1,0 +1,29 @@
+
+
+<div *ngIf="list" class="list-stack">
+	<div style="flex:1">
+		<h2 class="movie-title">{{ list.title }}</h2>
+		<p class="movie-overview">{{ list.description }}</p>
+		<div class="list-stack">
+			<div *ngFor="let movie of movies" class="movie-stack-item">
+				<div class="movie-card">
+					<img class="stack-poster" [src]="getPosterUrl(movie.poster_path)" alt="{{ movie.title }} poster" />
+					<div class="movie-info">
+						<div class="movie-title">{{ movie.title }}</div>
+						<div class="movie-meta">
+							<span>{{ movie.release_date | date }}</span>
+						</div>
+						<div class="movie-overview line-clamp-3">{{ movie.overview }}</div>
+						<div class="action-buttons">
+							<button class="btn btn-primary" (click)="addToFavorites(movie.id)">Add to Favorites</button>
+							<button class="btn btn-secondary" (click)="removeFromList(movie.id)">Remove from List</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div *ngIf="!list">
+	<p>List not found.</p>
+</div>

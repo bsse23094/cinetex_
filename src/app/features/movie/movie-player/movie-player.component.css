@@ -1,0 +1,47 @@
+.movie-player-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  background: #0e0526;
+  border: 2px solid #7a4bff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #3a86ff55;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.provider-switch {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
+  color: #ff3ee9;
+}
+.provider-switch label {
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+.player-frame-wrapper {
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 16/9;
+  background: #181028;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px #3a86ff33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #181028;
+}
+.no-video {
+  color: #ff3ee9;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}

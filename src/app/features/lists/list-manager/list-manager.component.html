@@ -1,0 +1,25 @@
+
+
+<div class="list-manager">
+	<h2 class="movie-title">Your Movie Lists</h2>
+	<form (ngSubmit)="addList()" class="add-list-form" style="display:flex; gap:1rem; margin-bottom:var(--spacing-lg);">
+		<input [(ngModel)]="newListId" name="newListId" type="text" placeholder="List ID" required class="custom-search-input" />
+		<input [(ngModel)]="newListTitle" name="newListTitle" type="text" placeholder="List Title" required class="custom-search-input" />
+		<button type="submit" class="btn btn-primary">Add List</button>
+	</form>
+	<div class="list-grid">
+		<div *ngFor="let list of lists" class="list-item custom-card">
+			<h3 class="movie-title">{{ list.title }}</h3>
+			<div class="list-stack">
+				<ng-container *ngFor="let movieId of list.movies.slice(0, 3)">
+					<img [src]="getMoviePoster(movieId)" alt="Movie poster" class="stack-poster" />
+				</ng-container>
+				<span *ngIf="list.movies.length > 3" class="meta-chip">+{{ list.movies.length - 3 }} more</span>
+			</div>
+			<div style="display:flex; gap:0.5rem; margin-top:var(--spacing-md);">
+				<button class="btn btn-secondary" [routerLink]="['/list', list.id]">See complete list</button>
+				<button class="btn btn-danger" (click)="deleteList(list.id)">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>

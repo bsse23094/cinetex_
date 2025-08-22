@@ -1,0 +1,14 @@
+<div class="rating" role="radiogroup" aria-label="Rating">
+    <ng-container *ngFor="let star of [1,2,3,4,5]">
+        <span
+            role="radio"
+            tabindex="0"
+            (click)="setRating(star)"
+            (mouseenter)="setHover(star)"
+            (mouseleave)="setHover(null)"
+            [class.filled]="getDisplayRating(star)"
+            [attr.aria-checked]="star <= currentRating">
+            ★
+        </span>
+    </ng-container>
+</div>

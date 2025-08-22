@@ -1,0 +1,22 @@
+
+
+<div class="favorites-container" *ngIf="favoriteMovies.length; else noFavs">
+   <h2 class="movie-title">Your Favorite Movies</h2>
+   <div class="movie-card custom-card custom-card-row" *ngFor="let movie of favoriteMovies">
+	   <img class="movie-poster" style="width:90px; height:135px; object-fit:cover; border-radius:var(--radius-md); box-shadow:var(--shadow-md);" [src]="movie.poster_path | posterUrl" alt="{{ movie.title }} poster" />
+	   <div class="movie-info" style="flex:1; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-start;">
+		   <div class="movie-title" style="margin-bottom:0;">{{ movie.title }}</div>
+		   <div class="movie-meta"><span>{{ movie.release_date | date }}</span></div>
+		   <div class="movie-overview line-clamp-3">{{ movie.overview }}</div>
+		   <div class="action-buttons">
+			   <button (click)="rateMovie(movie)" class="btn btn-secondary">Rate</button>
+			   <app-rating-stars *ngIf="ratingMovieId === movie.id"
+				   [currentRating]="getMovieRating(movie.id)"
+				   (ratingChange)="onChangeRating(movie.id, $event)"></app-rating-stars>
+		   </div>
+	   </div>
+   </div>
+</div>
+<ng-template #noFavs>
+   <p>You have no favorite movies yet.</p>
+</ng-template>

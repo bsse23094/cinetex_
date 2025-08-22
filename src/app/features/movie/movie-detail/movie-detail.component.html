@@ -1,0 +1,17 @@
+
+<div class="movie-detail">
+	<div class="detail-grid">
+		<img class="detail-poster" [src]="movie.poster_path || 'https://via.placeholder.com/200x300'" alt="{{ movie.title }} poster" />
+		<div class="detail-info">
+			<div class="detail-title">{{ movie.title }}</div>
+			<div class="detail-meta">
+				<span>Release Date: {{ movie.release_date | date }}</span>
+			</div>
+			<div class="movie-overview">{{ movie.overview }}</div>
+			<div style="margin:var(--spacing-md) 0;">
+				<app-rating-stars [currentRating]="userRating" (ratingChange)="onChangeRating($event)"></app-rating-stars>
+				<span style="margin-left:1rem;">Your Rating: {{ userRating }} / 5</span>
+			</div>
+		</div>
+	</div>
+</div>

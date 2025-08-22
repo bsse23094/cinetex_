@@ -1,0 +1,45 @@
+<div class="movie-card">
+  <div class="poster-container">
+    <img [src]="movie.poster_path | posterUrl" alt="{{ movie.title }} poster" class="movie-poster">
+    <div class="rating-badge">
+      <i class="fas fa-star"></i>
+      <span>{{ movie.vote_average | number:'1.1-1' }}</span>
+    </div>
+    <div class="hover-overlay">
+      <button class="play-button">
+        <i class="fas fa-play"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="movie-content">
+    <h3 class="movie-title">{{ movie.title }}</h3>
+    
+    <div class="movie-meta">
+      <span class="release-year">
+        <i class="far fa-calendar-alt"></i>
+        {{ movie.release_date | date:'yyyy' }}
+      </span>
+      
+      <span *ngIf="isMovieDetails(movie)" class="runtime">
+        <i class="far fa-clock"></i>
+        {{ movie.runtime }} min
+      </span>
+    </div>
+    
+    <p class="movie-overview" *ngIf="movie.overview">
+      {{ truncate(movie.overview, 100) }}
+    </p>
+    
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="addToWatchlist()">
+        <i class="fas fa-plus"></i>
+        Watchlist
+      </button>
+      <button class="btn-secondary" (click)="viewDetails()">
+        <i class="fas fa-info-circle"></i>
+        Details
+      </button>
+    </div>
+  </div>
+</div>

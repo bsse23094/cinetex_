@@ -1,0 +1,19 @@
+<div class="movie-player-container">
+  <div class="provider-switch">
+    <label *ngFor="let p of providers">
+      <input type="radio" name="provider" [value]="p.key" [(ngModel)]="provider" (change)="setProvider(p.key)">
+      {{ p.label }}
+    </label>
+  </div>
+  <div class="player-frame-wrapper">
+    <iframe *ngIf="trustedVideoUrl"
+            [src]="trustedVideoUrl"
+            width="100%"
+            height="480"
+            frameborder="0"
+            allowfullscreen
+            allow="autoplay; encrypted-media">
+    </iframe>
+    <div *ngIf="!trustedVideoUrl" class="no-video">No video available.</div>
+  </div>
+</div>

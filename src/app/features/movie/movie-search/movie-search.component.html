@@ -1,0 +1,64 @@
+
+
+<div class="search-container">
+				<div class="search-movie-title-center">
+					<h2 class="search-movie-title">
+						<span class="search-icon" aria-hidden="true">
+							<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+								<circle cx="11" cy="11" r="7" stroke="#ff3ee9" stroke-width="2" fill="none"/>
+								<rect x="16" y="16" width="5" height="2" rx="1" transform="rotate(45 16 16)" fill="#4dfffc"/>
+							</svg>
+						</span>
+						SEARCH MOVIES
+					</h2>
+				</div>
+		<form (ngSubmit)="search()" class="search-input search-movie-input" style="margin-bottom:var(--spacing-lg);">
+			<input [(ngModel)]="query" name="query" type="text" placeholder="Search for a movie..." required class="custom-search-input" />
+			<button type="submit" [disabled]="loading" class="btn btn-primary">Search</button>
+	</form>
+	<div *ngIf="loading" class="loading">Loading...</div>
+	<div class="search-results">
+				   <div *ngFor="let movie of results" class="movie-card custom-card" style="display:flex; flex-direction:column; align-items:center; gap:1rem; padding:1.5rem;">
+					   <img class="movie-poster" style="width:90px; height:135px; object-fit:cover; border-radius:var(--radius-md); box-shadow:var(--shadow-md); margin-bottom:1rem;" [src]="movie.poster_path | posterUrl" alt="{{ movie.title }} poster" />
+					   <div class="movie-title" style="margin-bottom:0; text-align:center;">{{ movie.title }}</div>
+					   <div class="movie-meta" style="text-align:center;"><span>{{ movie.release_date | date }}</span></div>
+					   <div class="movie-overview line-clamp-3" style="text-align:center;">{{ movie.overview }}</div>
+					   <div class="action-buttons" style="display:flex; flex-direction:column; gap:0.5rem; width:100%; max-width:260px; margin:0 auto;">
+						   <button (click)="router.navigate(['/watch', movie.id])" class="btn btn-primary" style="width:100%;">Watch</button>
+						   <button *ngIf="ratingMovieId !== movie.id" (click)="rateMovie(movie)" class="btn btn-secondary" style="width:100%;">Rate</button>
+						   <button (click)="addToFavorites(movie)" class="btn btn-primary" style="width:100%;">Add to Favorites</button>
+						   <button (click)="addToListPrompt(movie)" class="btn btn-secondary" style="width:100%;">Add to List</button>
+						   <app-rating-stars *ngIf="ratingMovieId === movie.id"
+							   [currentRating]="ratings[movie.id] || 0"
+							   (ratingChange)="onChangeRating(movie.id, $event)"></app-rating-stars>
+						   <button *ngIf="ratingMovieId === movie.id" (click)="ratingMovieId = null" class="btn btn-ghost" style="width:100%;">Cancel</button>
+					   </div>
+				   </div>
+				 <div *ngIf="showListPrompt" class="list-prompt-modal-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,0,40,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;">
+					 <div class="list-prompt-modal" style="background:#18003a;border:3px solid #7a4bff;border-radius:18px;box-shadow:0 8px 32px #3a86ff55;padding:2rem 2.5rem;min-width:320px;max-width:95vw;color:#fff;display:flex;flex-direction:column;gap:1.2rem;position:relative;z-index:10000;">
+			<ng-container *ngIf="userLists.length; else addNewListOnly">
+				<label>Select Lists:</label>
+				<div class="checkbox-list">
+					<label *ngFor="let list of userLists">
+						<input type="checkbox" [value]="list.id" [(ngModel)]="selectedListIds" name="selectedListIds" />
+						{{ list.title }}
+					</label>
+							 </div>
+						 
+				<div class="add-new-list-inline">
+					<input [(ngModel)]="newListTitle" name="newListTitle" placeholder="New List Title" class="pixel-border" />
+					<button (click)="addNewListInline()" [disabled]="!newListTitle.trim()" class="btn btn-primary">Add New List</button>
+				</div>
+				<button (click)="confirmAddToList()" class="btn btn-primary">Add to Selected</button>
+				<button (click)="cancelAddToList()" class="btn btn-ghost">Cancel</button>
+			</ng-container>
+			<ng-template #addNewListOnly>
+				<div class="add-new-list-inline">
+					<input [(ngModel)]="newListTitle" name="newListTitle" placeholder="New List Title" class="pixel-border" />
+					<button (click)="addNewListInline()" [disabled]="!newListTitle.trim()" class="btn btn-primary">Add New List</button>
+				</div>
+				<button (click)="cancelAddToList()" class="btn btn-ghost">Cancel</button>
+			</ng-template>
+		</div>
+	</div>
+</div>

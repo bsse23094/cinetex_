@@ -1,0 +1,16 @@
+<div class="rated-movies-container">
+  <h2>Rated Movies</h2>
+  <div *ngIf="ratedMovies.length; else noRated">
+  <div *ngFor="let item of ratedMovies" class="movie-card custom-card custom-card-row">
+      <img style="width:90px; height:135px; object-fit:cover; border-radius:var(--radius-md); box-shadow:var(--shadow-md);" [src]="item.movie.poster_path | posterUrl" alt="{{ item.movie.title }} poster" />
+      <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-start;">
+        <div class="movie-title" style="margin-bottom:0;">{{ item.movie.title }}</div>
+        <div class="movie-meta"><span>{{ item.movie.release_date | date }}</span></div>
+        <div><app-rating-stars [currentRating]="item.rating" [readonly]="true"></app-rating-stars></div>
+      </div>
+    </div>
+  </div>
+  <ng-template #noRated>
+    <p>You haven't rated any movies yet.</p>
+  </ng-template>
+</div>
