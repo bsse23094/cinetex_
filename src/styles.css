@@ -217,18 +217,21 @@ body {
   color: var(--text-muted);
   font-size: 0.875rem;
   pointer-events: none;
+  z-index: 1;
 }
 
 .search-bar input {
   width: 250px;
-  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 40px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
+  padding: 10px 80px 10px 40px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   color: var(--text-primary);
   font-size: 0.875rem;
   font-family: var(--font-main);
   transition: all var(--transition);
+  backdrop-filter: blur(10px);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
 
 .search-bar input::placeholder {
@@ -237,9 +240,44 @@ body {
 
 .search-bar input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--border-subtle);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border-color: rgba(0, 255, 136, 0.3);
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1), 0 4px 12px rgba(0, 0, 0, 0.4);
   width: 300px;
+}
+
+.search-bar .search-btn {
+  position: absolute;
+  right: 6px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: #000;
+  border: none;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+}
+
+.search-bar .search-btn:hover {
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  box-shadow: 0 4px 16px rgba(0, 255, 136, 0.5);
+  transform: translateY(-1px);
+}
+
+.search-bar .search-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+}
+
+.search-bar .search-btn i {
+  position: static;
+  pointer-events: auto;
 }
 
 /* Mobile Search (shown in mobile menu) */
@@ -257,22 +295,26 @@ body {
 
 .mobile-search-bar i {
   position: absolute;
-  left: var(--spacing-md);
+  left: 18px;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 1.1rem;
   pointer-events: none;
+  z-index: 1;
 }
 
 .mobile-search-bar input {
   width: 100%;
-  padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 44px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
+  padding: 16px 90px 16px 52px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text-primary);
   font-size: 1rem;
   font-family: var(--font-main);
   transition: all var(--transition);
+  backdrop-filter: blur(10px);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .mobile-search-bar input::placeholder {
@@ -281,9 +323,44 @@ body {
 
 .mobile-search-bar input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border-color: rgba(0, 255, 136, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.15), 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-search-bar .search-btn {
+  position: absolute;
+  right: 8px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: #000;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  box-shadow: 0 3px 12px rgba(0, 255, 136, 0.4);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-search-bar .search-btn:hover {
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
+}
+
+.mobile-search-bar .search-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.4);
+}
+
+.mobile-search-bar .search-btn i {
+  position: static;
+  pointer-events: auto;
 }
 
 /* Mobile Menu Toggle */

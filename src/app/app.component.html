@@ -10,6 +10,9 @@
         <div class="mobile-search-bar">
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Search movies, shows..." #mobileSearchInput (keyup.enter)="onSearch(mobileSearchInput.value); closeMobileMenu()">
+          <button class="search-btn" (click)="onSearch(mobileSearchInput.value); closeMobileMenu()">
+            <i class="fas fa-search"></i>
+          </button>
         </div>
       </div>
       <a routerLink="/search" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
@@ -29,6 +32,9 @@
       <div class="search-bar">
         <i class="fas fa-search"></i>
         <input type="text" placeholder="Search..." #searchInput (keyup.enter)="onSearch(searchInput.value)">
+        <button class="search-btn" (click)="onSearch(searchInput.value)">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
       <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
         <span></span>
