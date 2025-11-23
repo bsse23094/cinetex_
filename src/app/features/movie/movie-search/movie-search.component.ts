@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../movie.service';
@@ -7,16 +7,17 @@ import { Movie } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
+import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-movie-search',
   templateUrl: './movie-search.component.html',
   styleUrls: ['./movie-search.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RatingStarsComponent, PosterUrlPipe],
+  imports: [CommonModule, FormsModule, PosterUrlPipe],
   providers: [DatePipe]
 })
-export class MovieSearchComponent {
+export class MovieSearchComponent implements OnDestroy {
   query = '';
   results: Movie[] = [];
   loading = false;
@@ -30,8 +31,121 @@ export class MovieSearchComponent {
   ratings: { [key: number]: number } = {};
   ratingMovieId: number | null = null;
 
-  constructor(private movieService: MovieService, private storage: StorageService, public router: Router) {
+  isShowsMode = false;
+  featuredMovie: Movie | null = null;
+
+  // Recommended content for sliders
+  recommendedMovies: Movie[] = [];
+  recommendedShows: Movie[] = [];
+  recommendedAnime: Movie[] = [];
+  allContent: Movie[] = []; // Combined content for unified slider
+  
+  @ViewChild('unifiedCarousel') carouselRef!: ElementRef;
+  
+  constructor(private movieService: MovieService, private storage: StorageService, public router: Router, private route: ActivatedRoute) {
     this.loadRatings();
+    
+    // Subscribe to query params for search and type switching
+    this.route.queryParams.subscribe(params => {
+      if (params['query']) {
+        this.query = params['query'];
+        this.search();
+      } else {
+        this.query = '';
+        this.results = [];
+      }
+      
+      if (params['type']) {
+        this.isShowsMode = params['type'] === 'tv';
+        // If we are just switching modes without a query, we might want to reload recommendations or just stay on home
+      }
+    });
+
+    // Load recommended content
+    this.loadRecommendedContent();
+  }
+
+  ngOnDestroy() {
+    // No intervals to clear anymore
+  }
+
+  loadRecommendedContent() {
+    // Fetch popular movies
+    this.movieService.getPopularMovies(1).subscribe((res: any) => {
+      this.recommendedMovies = (res.results || []).slice(0, 20).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        release_date: r.release_date ?? r.first_air_date ?? '',
+        first_air_date: r.first_air_date,
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      } as Movie));
+      
+      if (this.recommendedMovies.length > 0) {
+        this.featuredMovie = this.recommendedMovies[0];
+      }
+    });
+
+    // Fetch popular TV shows
+    this.movieService.getPopularTv(1).subscribe((res: any) => {
+      this.recommendedShows = (res.results || []).slice(0, 20).map((r: any) => ({
+        id: r.id,
+        title: r.name ?? r.title,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        release_date: r.first_air_date ?? r.release_date ?? '',
+        first_air_date: r.first_air_date,
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'tv'
+      } as Movie));
+    });
+
+    // Fetch popular anime
+    this.movieService.getPopularAnime(1).subscribe((res: any) => {
+      this.recommendedAnime = (res.results || []).slice(0, 20).map((r: any) => ({
+        id: r.id,
+        title: r.name ?? r.title,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        release_date: r.first_air_date ?? r.release_date ?? '',
+        first_air_date: r.first_air_date,
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'tv' as any
+      } as Movie));
+      
+      // Combine all content for unified slider
+      this.allContent = [
+        ...this.recommendedMovies.slice(0, 10),
+        ...this.recommendedShows.slice(0, 8),
+        ...this.recommendedAnime.slice(0, 7)
+      ];
+    });
+  }
+
+  // Removed slider interval methods as we use CSS scrolling now
+
+  playMovie(movie: Movie) {
+    this.router.navigate(['/watch', movie.id]);
+  }
+
+  playShow(show: Movie) {
+    this.router.navigate(['/watch', show.id], { queryParams: { type: 'tv', season: 1, episode: 1 } });
+  }
+
+  playAnime(anime: Movie) {
+    this.router.navigate(['/watch', anime.id], { queryParams: { type: 'tv', season: 1, episode: 1 } });
+  }
+
+  setMediaType(type: 'movie' | 'tv') {
+    this.isShowsMode = (type === 'tv');
+    // Clear results when switching
+    this.results = [];
+    this.query = '';
   }
 
   loadRatings() {
@@ -41,17 +155,117 @@ export class MovieSearchComponent {
   search() {
     if (!this.query.trim()) return;
     this.loading = true;
-    this.movieService.searchMovies(this.query).subscribe((res: any) => {
-  this.results = res.results;
-  // debug: log poster paths to help diagnose missing posters in search
-  console.log('Search results poster_path samples:', this.results.slice(0, 5).map(r => ({ id: r.id, poster_path: r.poster_path })));
+    
+    console.log('Starting search for:', this.query);
+    
+    // Search both movies and TV shows
+    const movieSearch$ = this.movieService.searchMovies(this.query);
+    const tvSearch$ = this.movieService.searchTv(this.query);
+    
+    // Combine results from both searches
+    Promise.all([
+      movieSearch$.toPromise(),
+      tvSearch$.toPromise()
+    ]).then(([movieRes, tvRes]: any[]) => {
+      console.log('Movie results:', movieRes?.results?.length || 0);
+      console.log('TV results:', tvRes?.results?.length || 0);
+      
+      const movies = (movieRes?.results || []).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        release_date: r.release_date ?? r.first_air_date ?? '',
+        first_air_date: r.first_air_date,
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      }));
+      
+      const shows = (tvRes?.results || []).map((r: any) => ({
+        id: r.id,
+        title: r.name ?? r.title,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        release_date: r.first_air_date ?? r.release_date ?? '',
+        first_air_date: r.first_air_date,
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'tv'
+      }));
+      
+      // Combine and sort by popularity (vote_average)
+      this.results = [...movies, ...shows].sort((a, b) => b.vote_average - a.vote_average);
+      
+      console.log('Combined search results:', this.results.length, 'items');
+      console.log('Movies:', movies.length, 'Shows:', shows.length);
       this.loading = false;
       this.loadRatings();
+    }).catch(error => {
+      console.error('Search error:', error);
+      this.loading = false;
     });
   }
 
   rateMovie(movie: Movie) {
     this.ratingMovieId = movie.id;
+  }
+
+  watchMedia(movie: Movie) {
+    // Check the actual media_type of the item
+    const mediaType = this.getMediaType(movie);
+    
+    if (mediaType === 'tv') {
+      this.router.navigate(['/watch', movie.id], { queryParams: { type: 'tv', season: 1, episode: 1 } });
+    } else {
+      this.router.navigate(['/watch', movie.id]);
+    }
+  }
+  
+  scrollSlider(direction: 'left' | 'right') {
+    if (this.carouselRef) {
+      const scrollAmount = 400;
+      const element = this.carouselRef.nativeElement;
+      if (direction === 'left') {
+        element.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      } else {
+        element.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
+    }
+  }
+  
+  pauseScroll(event: Event) {
+    const target = event.target as HTMLElement;
+    const track = target.closest('.slider-track') as HTMLElement;
+    if (track) {
+      track.classList.add('paused');
+    }
+  }
+  
+  resumeScroll(event: Event) {
+    const target = event.target as HTMLElement;
+    const track = target.closest('.slider-track') as HTMLElement;
+    if (track) {
+      track.classList.remove('paused');
+    }
+  }
+  
+  scrollSliderLeft(event: Event) {
+    const button = event.target as HTMLElement;
+    const sliderRow = button.closest('.slider-row') as HTMLElement;
+    const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
+    if (container) {
+      container.scrollBy({ left: -600, behavior: 'smooth' });
+    }
+  }
+  
+  scrollSliderRight(event: Event) {
+    const button = event.target as HTMLElement;
+    const sliderRow = button.closest('.slider-row') as HTMLElement;
+    const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
+    if (container) {
+      container.scrollBy({ left: 600, behavior: 'smooth' });
+    }
   }
 
   onChangeRating(movieId: number, rating: number) {
@@ -131,5 +345,18 @@ export class MovieSearchComponent {
     this.selectedMovieId = null;
     this.selectedListIds = [];
     this.newListTitle = '';
+  }
+  
+  // Helper methods for template to access extended properties
+  getMediaType(movie: Movie): 'movie' | 'tv' {
+    return (movie as any).media_type || 'movie';
+  }
+  
+  getTitle(movie: Movie): string {
+    return movie.title || (movie as any).name || '';
+  }
+  
+  getReleaseDate(movie: Movie): string {
+    return movie.release_date || (movie as any).first_air_date || '';
   }
 }

@@ -2,11 +2,11 @@
 
 
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { User } from '../../../core/models/user.model';
 import { Movie } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
-import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
 
 @Component({
@@ -14,7 +14,7 @@ import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
   templateUrl: './favorites.component.html',
   styleUrls: ['./favorites.component.css'],
   standalone: true,
-  imports: [CommonModule, RatingStarsComponent, PosterUrlPipe],
+  imports: [CommonModule, PosterUrlPipe, DatePipe, DecimalPipe, RouterModule],
   providers: [DatePipe]
 })
 export class FavoritesComponent implements OnInit {
@@ -23,7 +23,7 @@ export class FavoritesComponent implements OnInit {
   ratingMovieId: number | null = null;
   ratings: { [key: number]: number } = {};
 
-  constructor(private storage: StorageService) {}
+  constructor(private storage: StorageService, private router: Router) {}
 
   ngOnInit() {
     this.reloadFavorites();
@@ -37,6 +37,10 @@ export class FavoritesComponent implements OnInit {
     } else {
       this.favoriteMovies = [];
     }
+  }
+
+  playMovie(movie: Movie) {
+    this.router.navigate(['/watch', movie.id]);
   }
 
   rateMovie(movie: Movie) {

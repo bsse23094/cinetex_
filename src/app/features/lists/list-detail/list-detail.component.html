@@ -1,29 +1,29 @@
+<div class="list-detail-container" style="padding: var(--spacing-xl);" *ngIf="list">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+    <h2 style="font-size: 2rem;">{{ list.title }}</h2>
+    <button class="btn-secondary" routerLink="/lists">Back to Lists</button>
+  </div>
+  
+  <p class="text-muted" style="margin-bottom: var(--spacing-xl);">{{ list.description }}</p>
 
-
-<div *ngIf="list" class="list-stack">
-	<div style="flex:1">
-		<h2 class="movie-title">{{ list.title }}</h2>
-		<p class="movie-overview">{{ list.description }}</p>
-		<div class="list-stack">
-			<div *ngFor="let movie of movies" class="movie-stack-item">
-				<div class="movie-card">
-					<img class="stack-poster" [src]="getPosterUrl(movie.poster_path)" alt="{{ movie.title }} poster" />
-					<div class="movie-info">
-						<div class="movie-title">{{ movie.title }}</div>
-						<div class="movie-meta">
-							<span>{{ movie.release_date | date }}</span>
-						</div>
-						<div class="movie-overview line-clamp-3">{{ movie.overview }}</div>
-						<div class="action-buttons">
-							<button class="btn btn-primary" (click)="addToFavorites(movie.id)">Add to Favorites</button>
-							<button class="btn btn-secondary" (click)="removeFromList(movie.id)">Remove from List</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="search-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2rem;">
+    <div class="movie-card" *ngFor="let movie of movies">
+      <div class="poster-container">
+        <img [src]="getPosterUrl(movie.poster_path)" [alt]="movie.title">
+      </div>
+      <div class="card-info">
+        <div class="card-title">{{ movie.title }}</div>
+        <div class="card-meta">
+          <span>{{ movie.release_date | date:'yyyy' }}</span>
+          <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+        </div>
+        <div style="margin-top: 0.5rem;">
+           <button class="btn-danger" style="font-size: 0.8rem; padding: 4px 8px;" (click)="removeFromList(movie.id)">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<div *ngIf="!list">
-	<p>List not found.</p>
+<div *ngIf="!list" class="text-muted" style="padding: 2rem; text-align: center;">
+  List not found.
 </div>

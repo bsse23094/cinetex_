@@ -84,9 +84,9 @@
             </div>
           </div>
           <div class="card-info">
-            <div class="card-title">{{ getTitle(show) }}</div>
+            <div class="card-title">{{ show.title }}</div>
             <div class="card-meta">
-              <span>{{ getReleaseDate(show) | date:'yyyy' }}</span>
+              <span>{{ show.release_date | date:'yyyy' }}</span>
               <span><i class="fas fa-star text-accent"></i> {{ show.vote_average | number:'1.1-1' }}</span>
             </div>
           </div>
@@ -118,9 +118,9 @@
             </div>
           </div>
           <div class="card-info">
-            <div class="card-title">{{ getTitle(anime) }}</div>
+            <div class="card-title">{{ anime.title }}</div>
             <div class="card-meta">
-              <span>{{ getReleaseDate(anime) | date:'yyyy' }}</span>
+              <span>{{ anime.release_date | date:'yyyy' }}</span>
               <span><i class="fas fa-star text-accent"></i> {{ anime.vote_average | number:'1.1-1' }}</span>
             </div>
           </div>
@@ -131,61 +131,31 @@
 </div>
 
 <!-- Search Results -->
-<div class="search-results-page" *ngIf="query">
+<div class="search-results-container" *ngIf="query">
   <div class="results-header">
-    <div class="header-content">
-      <div class="header-icon">
-        <i class="fas fa-search"></i>
-      </div>
-      <div class="header-text">
-        <h1 class="results-title">search results for "{{ query }}"</h1>
-        <p class="results-count">
-          <span class="count-number">{{ results.length }}</span> 
-          {{ results.length === 1 ? 'result' : 'results' }} found
-        </p>
-      </div>
-    </div>
+    <h2>search results for "{{ query }}"</h2>
+    <p class="results-count">{{ results.length }} results found</p>
   </div>
-  
-  <div class="results-grid" *ngIf="results.length">
-    <div class="result-card" *ngFor="let movie of results" (click)="watchMedia(movie)">
-      <div class="result-poster">
+  <div class="search-results-grid">
+    <div class="movie-card" *ngFor="let movie of results" (click)="watchMedia(movie)">
+      <div class="poster-container">
         <img [src]="movie.poster_path | posterUrl" [alt]="movie.title">
-        <div class="poster-gradient"></div>
-        <div class="poster-overlay">
-          <button class="play-button">
-            <i class="fas fa-play"></i>
-          </button>
-        </div>
-        <div class="media-type-badge">
-          <i class="fas" [ngClass]="getMediaType(movie) === 'tv' ? 'fa-tv' : 'fa-film'"></i>
-          {{ getMediaType(movie) === 'tv' ? 'TV' : 'Movie' }}
-        </div>
-        <div class="rating-badge">
-          <i class="fas fa-star"></i>
-          <span>{{ movie.vote_average | number:'1.1-1' }}</span>
+        <div class="card-overlay">
+          <div class="play-btn-small"><i class="fas fa-play"></i></div>
         </div>
       </div>
-      <div class="result-content">
-        <h3 class="result-title">{{ getTitle(movie) }}</h3>
-        <div class="result-meta">
-          <span class="year">{{ getReleaseDate(movie) | date:'yyyy' }}</span>
+      <div class="card-info">
+        <div class="card-title">{{ movie.title }}</div>
+        <div class="card-meta">
+          <span>{{ movie.release_date | date:'yyyy' }}</span>
+          <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
         </div>
-        <p class="result-overview" *ngIf="movie.overview">{{ movie.overview }}</p>
       </div>
     </div>
   </div>
-  
-  <div *ngIf="results.length === 0 && !loading" class="empty-results">
-    <div class="empty-icon">
-      <i class="fas fa-search"></i>
-    </div>
-    <h3>No results found</h3>
-    <p>Try searching with different keywords</p>
-    <button class="browse-btn" (click)="query = ''; search()">
-      <i class="fas fa-home"></i>
-      Back to Home
-    </button>
+  <div *ngIf="results.length === 0 && !loading" class="empty-state">
+    <i class="fas fa-search"></i>
+    <p>No results found</p>
   </div>
 </div>
 

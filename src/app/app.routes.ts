@@ -12,6 +12,7 @@ import { RatedMoviesComponent } from './features/user/rated-movies/rated-movies.
 export const routes: Routes = [
   { path: '', redirectTo: '/search', pathMatch: 'full' },
   { path: 'search', component: MovieSearchComponent },
+  { path: 'shows', component: MovieSearchComponent },
   { path: 'movie/:id', component: MovieDetailComponent },
   { path: 'lists', component: ListManagerComponent },
   { path: 'favorites', component: FavoritesComponent },

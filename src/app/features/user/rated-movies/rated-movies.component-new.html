@@ -1,0 +1,30 @@
+<div class="rated-movies-container">
+  <div class="page-header">
+    <h2 class="page-title">rated movies</h2>
+    <p class="page-subtitle">your personal ratings collection</p>
+  </div>
+
+  <div class="rated-grid" *ngIf="ratedMovies.length; else noRated">
+    <div class="rated-card" *ngFor="let item of ratedMovies">
+      <div class="rated-card-content">
+        <img [src]="item.movie.poster_path | posterUrl" alt="{{ item.movie.title }} poster" />
+        <div class="rated-card-info">
+          <div class="rated-card-title">{{ item.movie.title }}</div>
+          <div class="rated-card-meta">
+            <span>{{ item.movie.release_date | date:'yyyy' }}</span>
+          </div>
+          <div>
+            <app-rating-stars [currentRating]="item.rating" [readonly]="true"></app-rating-stars>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noRated>
+    <div class="empty-state">
+      <i class="far fa-star"></i>
+      <p>You haven't rated any movies yet</p>
+    </div>
+  </ng-template>
+</div>

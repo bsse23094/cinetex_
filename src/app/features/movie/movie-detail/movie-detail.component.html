@@ -1,17 +1,30 @@
-
-<div class="movie-detail">
-	<div class="detail-grid">
-		<img class="detail-poster" [src]="movie.poster_path || 'https://via.placeholder.com/200x300'" alt="{{ movie.title }} poster" />
-		<div class="detail-info">
-			<div class="detail-title">{{ movie.title }}</div>
-			<div class="detail-meta">
-				<span>Release Date: {{ movie.release_date | date }}</span>
-			</div>
-			<div class="movie-overview">{{ movie.overview }}</div>
-			<div style="margin:var(--spacing-md) 0;">
-				<app-rating-stars [currentRating]="userRating" (ratingChange)="onChangeRating($event)"></app-rating-stars>
-				<span style="margin-left:1rem;">Your Rating: {{ userRating }} / 5</span>
-			</div>
-		</div>
-	</div>
+<div class="hero-section" style="height: auto; min-height: 60vh; padding-top: 80px;" *ngIf="movie">
+  <div class="hero-bg">
+    <img [src]="movie.poster_path | posterUrl: 'original'" alt="Background">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">{{ movie.title }}</h1>
+    <div class="hero-meta">
+      <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% Match</span>
+      <span>{{ movie.release_date | date:'yyyy' }}</span>
+      <div class="genre-pills">
+        <span class="genre-pill" *ngFor="let genre of movie.genres">{{ genre.name }}</span>
+      </div>
+    </div>
+    <p class="hero-desc">{{ movie.overview }}</p>
+    <div class="hero-actions">
+      <button class="btn-primary" (click)="playMovie()">
+        <i class="fas fa-play"></i> Play Now
+      </button>
+      <button class="btn-secondary" (click)="toggleFavourite()" [class.text-accent]="isFavorite">
+        <i class="fas fa-heart" *ngIf="isFavorite"></i>
+        <i class="far fa-heart" *ngIf="!isFavorite"></i>
+      </button>
+      <!-- Rating -->
+      <div style="margin-left: 1rem;">
+        <app-rating-stars [currentRating]="userRating" (ratingChange)="onChangeRating($event)"></app-rating-stars>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,16 +1,57 @@
-<div class="rated-movies-container">
-  <h2>Rated Movies</h2>
-  <div *ngIf="ratedMovies.length; else noRated">
-  <div *ngFor="let item of ratedMovies" class="movie-card custom-card custom-card-row">
-      <img style="width:90px; height:135px; object-fit:cover; border-radius:var(--radius-md); box-shadow:var(--shadow-md);" [src]="item.movie.poster_path | posterUrl" alt="{{ item.movie.title }} poster" />
-      <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-start;">
-        <div class="movie-title" style="margin-bottom:0;">{{ item.movie.title }}</div>
-        <div class="movie-meta"><span>{{ item.movie.release_date | date }}</span></div>
-        <div><app-rating-stars [currentRating]="item.rating" [readonly]="true"></app-rating-stars></div>
+<div class="rated-page">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="header-text">
+        <h1 class="page-title">rated movies</h1>
+        <p class="page-subtitle">
+          <span class="count">{{ ratedMovies.length }}</span> 
+          {{ ratedMovies.length === 1 ? 'rating' : 'ratings' }} in your collection
+        </p>
       </div>
     </div>
   </div>
+
+  <div class="rated-grid" *ngIf="ratedMovies.length; else noRated">
+    <div class="rated-card" *ngFor="let item of ratedMovies">
+      <div class="card-poster">
+        <img [src]="item.movie.poster_path | posterUrl" [alt]="item.movie.title">
+        <div class="card-gradient"></div>
+        <div class="your-rating-badge">
+          <div class="rating-stars">
+            <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]" 
+               [class.filled]="star <= item.rating"></i>
+          </div>
+          <span class="rating-number">{{ item.rating }}/5</span>
+        </div>
+      </div>
+      <div class="card-content">
+        <h3 class="card-title">{{ item.movie.title }}</h3>
+        <div class="card-meta">
+          <span class="year">{{ item.movie.release_date | date:'yyyy' }}</span>
+          <span class="dot">•</span>
+          <span class="tmdb-rating">
+            <i class="fas fa-star"></i>
+            {{ item.movie.vote_average | number:'1.1-1' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <ng-template #noRated>
-    <p>You haven't rated any movies yet.</p>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="far fa-star"></i>
+      </div>
+      <h3>No ratings yet</h3>
+      <p>Start rating movies to build your personal collection</p>
+      <button class="browse-btn" routerLink="/">
+        <i class="fas fa-search"></i>
+        Discover Movies
+      </button>
+    </div>
   </ng-template>
 </div>

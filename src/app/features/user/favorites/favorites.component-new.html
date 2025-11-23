@@ -1,0 +1,31 @@
+<div class="favorites-container">
+  <div class="page-header">
+    <h2 class="page-title">your favorites</h2>
+    <p class="page-subtitle">movies you love</p>
+  </div>
+  
+  <div class="favorites-grid" *ngIf="favoriteMovies.length; else noFavs">
+    <div class="movie-card" *ngFor="let movie of favoriteMovies" (click)="playMovie(movie)">
+      <div class="poster-container">
+        <img [src]="movie.poster_path | posterUrl" [alt]="movie.title">
+        <div class="card-overlay">
+          <div class="play-btn-small"><i class="fas fa-play"></i></div>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-title">{{ movie.title }}</div>
+        <div class="card-meta">
+          <span>{{ movie.release_date | date:'yyyy' }}</span>
+          <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <ng-template #noFavs>
+    <div class="empty-state">
+      <i class="far fa-heart"></i>
+      <p>You have no favorite movies yet</p>
+    </div>
+  </ng-template>
+</div>

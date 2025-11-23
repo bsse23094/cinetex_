@@ -8,7 +8,7 @@ import { Movie } from '../../../core/models/movie.model';
 @Component({
   selector: 'app-rated-movies',
   standalone: true,
-  imports: [CommonModule, PosterUrlPipe, RatingStarsComponent],
+  imports: [CommonModule, PosterUrlPipe],
   templateUrl: './rated-movies.component.html',
   styleUrls: ['./rated-movies.component.css']
 })
