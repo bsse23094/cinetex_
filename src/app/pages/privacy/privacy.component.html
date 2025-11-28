@@ -1,0 +1,45 @@
+<div class="page-wrap">
+  <div class="hero-section simple-hero">
+    <div class="hero-content" style="padding: 40px 4%; max-width: 900px;">
+      <h1 class="hero-title"><i class="fas fa-user-secret" style="margin-right:10px;color:var(--accent)"></i>Privacy Policy</h1>
+      <p class="hero-desc muted">Your privacy matters. Below is a short summary of what Cinetex stores and why.</p>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="page-card">
+      <h2>Data We Store</h2>
+      <p class="muted">Cinetex stores minimal data locally in your browser: watch progress and lists. No server-side personal data storage is performed by default.</p>
+
+      <div class="feature-grid">
+        <div class="page-card feature-item">
+          <div class="fi-icon"><i class="fas fa-database"></i></div>
+          <div>
+            <strong>Local-only</strong>
+            <p class="muted">Lists and progress are saved to localStorage on your device.</p>
+          </div>
+        </div>
+
+        <div class="page-card feature-item">
+          <div class="fi-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div>
+            <strong>Third-party APIs</strong>
+            <p class="muted">We request metadata from TMDB and other public APIs; those requests may be visible to those services.</p>
+          </div>
+        </div>
+
+        <div class="page-card feature-item">
+          <div class="fi-icon"><i class="fas fa-user-shield"></i></div>
+          <div>
+            <strong>Controls</strong>
+            <p class="muted">Clear local storage in your browser to remove saved lists and progress.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px">
+        <button class="cta-btn" (click)="openSupport()"><i class="fas fa-life-ring"></i> Support</button>
+      </div>
+    </div>
+  </div>
+</div>

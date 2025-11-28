@@ -8,6 +8,9 @@ import { FavoritesComponent } from './features/user/favorites/favorites.componen
 import { ListDetailComponent } from './features/lists/list-detail/list-detail.component';
 
 import { RatedMoviesComponent } from './features/user/rated-movies/rated-movies.component';
+import { AboutComponent } from './pages/about/about.component';
+import { PrivacyComponent } from './pages/privacy/privacy.component';
+import { TermsComponent } from './pages/terms/terms.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/search', pathMatch: 'full' },
@@ -19,6 +22,9 @@ export const routes: Routes = [
   { path: 'list/:id', component: ListDetailComponent },
   { path: 'rated', component: RatedMoviesComponent },
   { path: 'watch/:id', component: MoviePlayerComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'privacy', component: PrivacyComponent },
+  { path: 'terms', component: TermsComponent },
   // optional Profile route
    //{ path: 'profile', component: ProfileComponent }
 ];

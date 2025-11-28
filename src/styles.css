@@ -1,22 +1,23 @@
-/* ==========================================
-   CINETEX - SLEEK NETFLIX-INSPIRED DESIGN
-   Modern, Minimal, Cinematic Experience
-   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&display=swap');
 
+/* ==========================================
+  CINETEX - SLEEK NETFLIX-INSPIRED DESIGN
+  Modern, Minimal, Cinematic Experience
+  ========================================== */
 :root {
   /* Colors */
   --bg-primary: #000000;
   --bg-secondary: #0a0a0a;
-  --bg-card: #141414;
-  --bg-card-hover: #1f1f1f;
+  --bg-card: #111213;
+  --bg-card-hover: #161718;
   --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-muted: #808080;
-  --accent: #00ff88;
-  --accent-hover: #00cc6a;
-  --accent-dark: #00aa55;
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  
+  --text-secondary: #bfc7c1;
+  --text-muted: #9aa39b;
+  --accent: #00c67a; /* refined green accent */
+  --accent-hover: #00a85f;
+  --accent-dark: #00884b;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -24,25 +25,25 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
-  
+
   /* Border Radius */
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 12px;
-  
+  --radius-lg: 10px;
+
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.8);
-  
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.75);
+
   /* Typography */
-  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-main: 'Elm Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-heading: 'Syncopate', sans-serif;
-  
-  /* Transitions */
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --accent: #00c67a; /* refined green accent */
+  --accent-hover: #00a85f;
+  --accent-dark: #00884b;
+  --transition: 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-slow: 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* ==========================================
@@ -62,6 +63,10 @@ html {
   font-size: 16px;
 }
 
+
+/* Fonts: load Syncopate (headings) and provide Elm Sans fallback.
+  If you want Elm Sans (commercial) include it locally or via a licensed provider. */
+
 body {
   font-family: var(--font-main);
   background-color: var(--bg-primary);
@@ -71,6 +76,87 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
+
+/* --- Page-level utilities for About/Privacy/Terms --- */
+.page-wrap {
+  padding: 96px 0 48px 0;
+}
+
+.simple-hero {
+  padding: 48px 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.hero-content h1,
+.hero-title {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.content-block {
+  padding: 28px 4%;
+  max-width: 1200px;
+  margin: 0 auto 28px auto;
+}
+
+.page-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.page-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.7), 0 2px 8px rgba(0,198,122,0.08);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.feature-item .fi-icon {
+  font-size: 1.5rem;
+  color: var(--accent);
+  background: rgba(0,0,0,0.25);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: #000;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  box-shadow: 0 6px 18px rgba(0,198,122,0.18);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border: none;
+  cursor: pointer;
+}
+
+.cta-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,198,122,0.26); }
+
+.muted { color: var(--text-secondary); }
+
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -131,6 +217,81 @@ body {
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Unified button styles to look premium */
+.btn-primary, .btn-secondary, .search-btn {
+  font-family: var(--font-main);
+  border-radius: 8px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: #000;
+  padding: 10px 18px;
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,198,122,0.18);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-primary);
+  padding: 8px 12px;
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.02);
+  transform: translateY(-1px);
+}
+
+/* Links and nav hover */
+a, .nav-link span, .footer-link {
+  transition: color var(--transition), opacity var(--transition), transform var(--transition);
+}
+
+a:hover, .nav-link:hover span, .footer-link:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Card hover polish */
+.movie-card {
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+}
+
+.movie-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+  filter: saturate(1.05);
+}
+
+/* Footer links subtle gradient underline */
+.footer-link {
+  position: relative;
+}
+.footer-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0,198,122,0) 0%, rgba(0,198,122,0.8) 50%, rgba(0,198,122,0) 100%);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--transition), opacity var(--transition);
+}
+.footer-link:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 /* Logo */
