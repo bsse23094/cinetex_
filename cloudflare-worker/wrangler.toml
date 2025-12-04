@@ -1,0 +1,6 @@
+name = "cinetex-chatbot"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Environment variables can be added here if needed

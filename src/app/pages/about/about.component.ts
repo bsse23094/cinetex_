@@ -11,8 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 
 export class AboutComponent {
-  // Scroll to bottom helper used by the template
-  scrollToBottom(): void {
-    try { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } catch (e) { console.error(e); }
+  openRepo(): void {
+    window.open('https://github.com/bsse23094/cinetex_', '_blank');
   }
 }

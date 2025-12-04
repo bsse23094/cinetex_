@@ -1,0 +1,113 @@
+<!-- Chat Toggle Button -->
+<button 
+  class="chat-toggle" 
+  [class.open]="isOpen"
+  (click)="toggleChat()"
+  aria-label="Open chat assistant">
+  <i class="fas" [class.fa-comments]="!isOpen" [class.fa-times]="isOpen"></i>
+  <span class="chat-badge" *ngIf="!isOpen && messages.length > 0">{{ messages.length }}</span>
+</button>
+
+<!-- Chat Window -->
+<div class="chat-window" [class.open]="isOpen" [class.minimized]="isMinimized">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="chat-header-text">
+        <span class="chat-title">CineBot</span>
+        <span class="chat-status">
+          <span class="status-dot"></span>
+          Online
+        </span>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="header-btn" (click)="clearChat()" title="Clear chat" *ngIf="messages.length > 0">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <button class="header-btn" (click)="minimizeChat()" title="Minimize">
+        <i class="fas" [class.fa-minus]="!isMinimized" [class.fa-expand]="isMinimized"></i>
+      </button>
+      <button class="header-btn close-btn" (click)="closeChat()" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="chat-messages" #messagesContainer [class.hidden]="isMinimized">
+    <!-- Welcome Message -->
+    <div class="welcome-section" *ngIf="messages.length === 0">
+      <div class="welcome-icon">
+        <i class="fas fa-film"></i>
+      </div>
+      <h3 class="welcome-title">Welcome to CineBot!</h3>
+      <p class="welcome-text">I can help you discover movies, get recommendations, and find information about your favorite films.</p>
+      
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button 
+          class="quick-action-btn" 
+          *ngFor="let action of quickActions"
+          (click)="sendQuickAction(action.message)">
+          {{ action.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="message-list" *ngIf="messages.length > 0">
+      <div 
+        class="message" 
+        *ngFor="let msg of messages"
+        [class.user]="msg.role === 'user'"
+        [class.assistant]="msg.role === 'assistant'">
+        <div class="message-avatar" *ngIf="msg.role === 'assistant'">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+          <div class="message-bubble" [innerHTML]="formatMessage(msg.content)"></div>
+          <span class="message-time">{{ msg.timestamp | date:'shortTime' }}</span>
+        </div>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div class="message assistant" *ngIf="isLoading">
+        <div class="message-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+          <div class="message-bubble typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input-area" [class.hidden]="isMinimized">
+    <div class="chat-input-container">
+      <input 
+        type="text" 
+        class="chat-input" 
+        placeholder="Ask about movies..."
+        [(ngModel)]="userMessage"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isLoading"
+        #messageInput>
+      <button 
+        class="send-btn" 
+        (click)="sendMessage()"
+        [disabled]="!userMessage.trim() || isLoading">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+    <p class="chat-disclaimer">CineBot uses AI. Verify recommendations.</p>
+  </div>
+</div>

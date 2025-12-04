@@ -1,11 +1,1 @@
-.simple-hero { 
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-}
-.hero-title {
-  font-size: 2rem;
-  margin-bottom: 12px;
-}
-.hero-desc {
-  color: var(--text-secondary);
-  margin-bottom: 18px;
-}
+/* Terms uses shared page styles from styles.css */

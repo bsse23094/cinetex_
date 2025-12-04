@@ -1,47 +1,35 @@
-<div class="page-wrap">
-  <div class="hero-section simple-hero">
-    <div class="hero-content" style="padding: 40px 4%;">
-      <h1 class="hero-title"><i class="fas fa-film" style="margin-right:10px;color:var(--accent)"></i>About Cinetex</h1>
-      <p class="hero-desc muted">Cinetex is your lightweight streaming companion — built to discover movies, TV shows and anime with a premium, cinematic UI.</p>
+<div class="static-page">
+  <section class="static-hero">
+    <h1 class="static-title">About</h1>
+    <p class="static-subtitle">Your streaming companion for movies, TV shows, and anime.</p>
+  </section>
+
+  <section class="static-content">
+    <article class="static-article">
+      <h2>What We Do</h2>
+      <p>Cinetex is a modern streaming companion that helps you discover, track, and organize your favorite movies and TV shows. We bring together content from multiple sources into one seamless experience.</p>
+    </article>
+
+    <article class="static-article">
+      <h2>Fast & Responsive</h2>
+      <p>Built with performance in mind. Instant search, smooth animations, and optimized performance across all devices — from desktop to mobile.</p>
+    </article>
+
+    <article class="static-article">
+      <h2>Privacy First</h2>
+      <p>No accounts required. No tracking. Your watch history, favorites, and lists are stored locally in your browser. Your data never leaves your device.</p>
+    </article>
+
+    <article class="static-article">
+      <h2>Open Source</h2>
+      <p>Cinetex is built with Angular and is completely open source. Contributions, feedback, and community involvement are always welcome.</p>
+    </article>
+
+    <div class="static-cta">
+      <button class="static-btn" (click)="openRepo()">
+        <i class="fab fa-github"></i>
+        <span>View on GitHub</span>
+      </button>
     </div>
-  </div>
-
-  <div class="content-block">
-    <div class="page-card">
-      <h2>Our Mission</h2>
-      <p class="muted">Provide a fast, privacy-respecting, and beautiful interface to discover and enjoy content. We prioritize UX and accessibility while using trusted metadata sources.</p>
-
-      <div class="feature-grid">
-        <div class="page-card feature-item">
-          <div class="fi-icon"><i class="fas fa-bolt"></i></div>
-          <div>
-            <strong>Fast</strong>
-            <p class="muted">Optimized for speed and minimal latency.</p>
-          </div>
-        </div>
-
-        <div class="page-card feature-item">
-          <div class="fi-icon"><i class="fas fa-shield-alt"></i></div>
-          <div>
-            <strong>Private</strong>
-            <p class="muted">We only store local progress and lists in your browser.</p>
-          </div>
-        </div>
-
-        <div class="page-card feature-item">
-          <div class="fi-icon"><i class="fas fa-palette"></i></div>
-          <div>
-            <strong>Design-forward</strong>
-            <p class="muted">Premium UI with attention to typography and motion.</p>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:18px">
-        <button class="cta-btn" (click)="scrollToBottom()">
-          <i class="fas fa-angle-down"></i> Learn more
-        </button>
-      </div>
-    </div>
-  </div>
+  </section>
 </div>
