@@ -31,6 +31,13 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Hide toggle button when chat is open on mobile - use header close button instead */
+@media (max-width: 768px) {
+  .chat-toggle.open {
+    display: none;
+  }
+}
+
 .chat-badge {
   position: absolute;
   top: -4px;

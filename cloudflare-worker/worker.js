@@ -1,9 +1,12 @@
 /**
  * Cinetex Chatbot - Cloudflare Worker
  * Proxies requests to Gemini API for movie recommendations
+ * 
+ * IMPORTANT: The API key should be set as a secret in Cloudflare:
+ * wrangler secret put GEMINI_API_KEY
+ * Then enter your new API key when prompted
  */
 
-const GEMINI_API_KEY = 'AIzaSyBZ0OTO4H1mnT72dmAuV5lApECtVX9aZhw';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 const corsHeaders = {
@@ -46,7 +49,7 @@ export default {
         }
       };
 
-      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      const response = await fetch(`${GEMINI_API_URL}?key=${env.GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(geminiRequest)
