@@ -1,25 +1,54 @@
 <footer class="app-footer">
-  <div class="footer-content">
-    <div class="footer-brand">
-      <span class="footer-logo">cinetex</span>
-      <p class="footer-tagline">your streaming companion</p>
+  <div class="footer-container">
+    <div class="footer-grid">
+      <!-- Brand Section -->
+      <div class="footer-section footer-brand">
+        <div class="brand-header">
+          <i class="fas fa-film brand-icon"></i>
+          <span class="footer-logo">cinetex</span>
+        </div>
+        <p class="footer-tagline">Your premium streaming companion for movies, TV shows, and anime. Discover, watch, and enjoy unlimited entertainment.</p>
+        <div class="footer-social">
+          <a href="https://github.com/bsse23094/cinetex_" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+          
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-section">
+        <h3 class="footer-heading">
+          <i class="fas fa-link"></i>
+          Quick Links
+        </h3>
+        <ul class="footer-list">
+          <li><a routerLink="/" class="footer-link"><i class="fas fa-home"></i> Home</a></li>
+          <li><a routerLink="/library" class="footer-link"><i class="fas fa-th"></i> Library</a></li>
+          <li><a routerLink="/favorites" class="footer-link"><i class="fas fa-heart"></i> Favorites</a></li>
+          <li><a routerLink="/lists" class="footer-link"><i class="fas fa-list"></i> My Lists</a></li>
+          <li><a routerLink="/rated" class="footer-link"><i class="fas fa-star"></i> Rated Movies</a></li>
+        </ul>
+      </div>
     </div>
-    
-    <div class="footer-links">
-      <a routerLink="/about" class="footer-link" routerLinkActive="active">About</a>
-      <a href="https://github.com/bsse23094/cinetex_" target="_blank" rel="noopener noreferrer" class="footer-link">Support</a>
-      <a routerLink="/privacy" class="footer-link" routerLinkActive="active">Privacy</a>
-      <a routerLink="/terms" class="footer-link" routerLinkActive="active">Terms</a>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <div class="footer-divider"></div>
+      <div class="footer-bottom-content">
+        <div class="footer-copyright">
+          <i class="fas fa-copyright"></i>
+          <span>{{ currentYear }} Cinetex. All rights reserved.</span>
+        </div>
+        <div class="footer-badges">
+          <span class="badge"><i class="fas fa-lock"></i> Secure</span>
+          <span class="badge"><i class="fas fa-bolt"></i> Fast</span>
+          <span class="badge"><i class="fas fa-check-circle"></i> Trusted</span>
+        </div>
+        <div class="footer-meta">
+          <span>Made for cinephiles</span>
+        </div>
+      </div>
     </div>
-    
-    <div class="footer-social">
-      <a href="https://github.com/bsse23094/cinetex_" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub">
-        <i class="fab fa-github"></i>
-      </a>
-    </div>
-  </div>
-  
-  <div class="footer-bottom">
-    <p>&copy; {{ currentYear }} cinetex. All rights reserved.</p>
   </div>
 </footer>
