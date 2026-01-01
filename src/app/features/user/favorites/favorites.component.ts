@@ -28,6 +28,7 @@ export class FavoritesComponent implements OnInit {
   ngOnInit() {
     this.reloadFavorites();
     this.ratings = this.storage.get<{ [key: number]: number }>('ratings') || {};
+    this.setBackdropImage();
   }
 
   reloadFavorites() {
@@ -36,6 +37,14 @@ export class FavoritesComponent implements OnInit {
       this.favoriteMovies = this.storage.getMoviesByIds(this.user.favoriteMovieIds);
     } else {
       this.favoriteMovies = [];
+    }
+  }
+
+  setBackdropImage(): void {
+    const randomMovie = this.favoriteMovies[Math.floor(Math.random() * this.favoriteMovies.length)];
+    if (randomMovie && randomMovie.backdrop_path) {
+      const backdropUrl = `https://image.tmdb.org/t/p/original${randomMovie.backdrop_path}`;
+      document.documentElement.style.setProperty('--favorites-backdrop-image', `url('${backdropUrl}')`);
     }
   }
 

@@ -7,8 +7,8 @@
 
 /* Continue Watching Banner */
 .continue-banner {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
-  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+  background: linear-gradient(135deg, rgba(236, 63, 163, 0.15), rgba(91, 125, 232, 0.1));
+  border-bottom: 1px solid rgba(236, 63, 163, 0.4);
   padding: 24px 40px;
   animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -35,7 +35,7 @@
 .continue-icon {
   width: 48px;
   height: 48px;
-  background: rgba(0, 255, 136, 0.15);
+  background: rgba(236, 63, 163, 0.12);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -95,7 +95,7 @@
 .btn-primary:hover {
   background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 20px rgba(236, 63, 163, 0.3);
 }
 
 .btn-secondary {
@@ -226,7 +226,7 @@
   width: 80px;
   height: 80px;
   margin: 0 auto 20px;
-  background: rgba(0, 255, 136, 0.15);
+  background: rgba(236, 63, 163, 0.12);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -281,7 +281,7 @@
 .btn-play-next:hover {
   background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+  box-shadow: 0 10px 30px rgba(236, 63, 163, 0.4);
 }
 
 /* View Toggle */
@@ -409,7 +409,7 @@
 
 .episode-card.active {
   border-color: var(--accent);
-  background: rgba(0, 255, 136, 0.08);
+  background: rgba(236, 63, 163, 0.08);
 }
 
 .episode-thumbnail {
@@ -633,8 +633,8 @@
 }
 
 .genre-tag {
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(236, 63, 163, 0.12);
+  border: 1px solid rgba(236, 63, 163, 0.4);
   color: var(--accent);
   padding: 6px 14px;
   border-radius: 8px;

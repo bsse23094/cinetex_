@@ -5,11 +5,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { LoadingScreenComponent } from './shared/components/loading-screen/loading-screen.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { ChatbotComponent } from './shared/components/chatbot/chatbot.component';
+import { DarkVeilComponent } from './shared/components/dark-veil/dark-veil.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LoadingScreenComponent, FooterComponent, ChatbotComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LoadingScreenComponent, FooterComponent, ChatbotComponent, DarkVeilComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

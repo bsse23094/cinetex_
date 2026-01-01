@@ -1,12 +1,23 @@
-<div class="list-detail-container" style="padding: var(--spacing-xl);" *ngIf="list">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
-    <h2 style="font-size: 2rem;">{{ list.title }}</h2>
-    <button class="btn-secondary" routerLink="/lists">Back to Lists</button>
+<div class="list-detail-container" *ngIf="list">
+  <div class="list-header">
+    <div class="list-info">
+      <h2 class="list-title">{{ list.title }}</h2>
+      <div class="list-meta">
+        <span class="count">
+          <i class="fas fa-film"></i>
+          {{ list.movies.length || 0 }} {{ (list.movies.length || 0) === 1 ? 'movie' : 'movies' }}
+        </span>
+      </div>
+    </div>
+    <button class="btn-secondary" routerLink="/lists">
+      <i class="fas fa-arrow-left"></i>
+      Back to Lists
+    </button>
   </div>
   
-  <p class="text-muted" style="margin-bottom: var(--spacing-xl);">{{ list.description }}</p>
+  <p class="list-description" *ngIf="list.description">{{ list.description }}</p>
 
-  <div class="search-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2rem;">
+  <div class="movies-grid" *ngIf="movies.length > 0; else emptyList">
     <div class="movie-card" *ngFor="let movie of movies">
       <div class="poster-container">
         <img [src]="getPosterUrl(movie.poster_path)" [alt]="movie.title">
@@ -15,15 +26,38 @@
         <div class="card-title">{{ movie.title }}</div>
         <div class="card-meta">
           <span>{{ movie.release_date | date:'yyyy' }}</span>
-          <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+          <span class="rating">
+            <i class="fas fa-star text-accent"></i>
+            {{ movie.vote_average | number:'1.1-1' }}
+          </span>
         </div>
-        <div style="margin-top: 0.5rem;">
-           <button class="btn-danger" style="font-size: 0.8rem; padding: 4px 8px;" (click)="removeFromList(movie.id)">Remove</button>
-        </div>
+        <button class="btn-danger" (click)="removeFromList(movie.id)">
+          <i class="fas fa-trash-alt"></i>
+          Remove
+        </button>
       </div>
     </div>
   </div>
+
+  <ng-template #emptyList>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-film"></i>
+      </div>
+      <h3>No movies in this list yet</h3>
+      <p>Start adding movies to build your collection</p>
+    </div>
+  </ng-template>
 </div>
-<div *ngIf="!list" class="text-muted" style="padding: 2rem; text-align: center;">
-  List not found.
+
+<div *ngIf="!list" class="empty-state">
+  <div class="empty-icon">
+    <i class="fas fa-exclamation-circle"></i>
+  </div>
+  <h3>List not found</h3>
+  <p>The list you're looking for doesn't exist</p>
+  <button class="btn-secondary" routerLink="/lists">
+    <i class="fas fa-arrow-left"></i>
+    Back to Lists
+  </button>
 </div>

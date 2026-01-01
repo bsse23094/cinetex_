@@ -36,7 +36,7 @@
   </div>
 
   <div class="collections-grid">
-    <div *ngFor="let list of lists" class="collection-card">
+    <div *ngFor="let list of lists" class="collection-card" [routerLink]="['/list', list.id]">
       <div class="collection-preview">
         <div class="preview-stack">
           <ng-container *ngFor="let movieId of list.movies.slice(0, 3); let i = index">
@@ -57,9 +57,9 @@
           </div>
         </div>
         <div class="collection-overlay">
-          <button class="view-btn" [routerLink]="['/list', list.id]">
+          <div class="view-btn">
             <i class="fas fa-arrow-right"></i>
-          </button>
+          </div>
         </div>
       </div>
       
@@ -70,7 +70,7 @@
             <i class="fas fa-film"></i>
             {{ list.movies.length }} {{ list.movies.length === 1 ? 'item' : 'items' }}
           </span>
-          <button class="btn-delete-mini" (click)="deleteList(list.id)">
+          <button class="btn-delete-mini" (click)="deleteList(list.id); $event.stopPropagation()">
             <i class="fas fa-trash"></i>
           </button>
         </div>

@@ -1,6 +1,6 @@
 <div class="movie-card">
   <div class="poster-container">
-    <img [src]="movie.poster_path | posterUrl" alt="{{ movie.title }} poster" class="movie-poster">
+    <img [src]="movie.backdrop_path | backdropUrl" alt="{{ movie.title }} backdrop" class="movie-poster" [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
     <div class="rating-badge">
       <i class="fas fa-star"></i>
       <span>{{ movie.vote_average | number:'1.1-1' }}</span>

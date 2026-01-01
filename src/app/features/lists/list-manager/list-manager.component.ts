@@ -1,7 +1,7 @@
 
 
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -20,10 +20,32 @@ export class ListManagerComponent implements OnInit {
   newListId = '';
   newListTitle = '';
 
-  constructor(private storage: StorageService) {}
+  constructor(
+    private storage: StorageService,
+    private renderer: Renderer2,
+    private el: ElementRef
+  ) {}
 
   ngOnInit() {
     this.lists = this.storage.getLists();
+    this.setBackdropImage();
+  }
+
+  setBackdropImage() {
+    const allMovies = this.storage.getMovies();
+    if (allMovies && allMovies.length > 0) {
+      const randomMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
+      if (randomMovie.backdrop_path) {
+        const backdropUrl = randomMovie.backdrop_path.startsWith('http')
+          ? randomMovie.backdrop_path
+          : `https://image.tmdb.org/t/p/original${randomMovie.backdrop_path}`;
+        this.renderer.setStyle(
+          this.el.nativeElement,
+          '--library-backdrop-image',
+          `url(${backdropUrl})`
+        );
+      }
+    }
   }
 
   addList() {

@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,14 +7,14 @@ import { Movie } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
-import { ViewChild, ElementRef } from '@angular/core';
+import { BackdropUrlPipe } from '../../../shared/pipes/backdrop-url.pipe';
 
 @Component({
   selector: 'app-movie-search',
   templateUrl: './movie-search.component.html',
   styleUrls: ['./movie-search.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterUrlPipe],
+  imports: [CommonModule, FormsModule, PosterUrlPipe, BackdropUrlPipe],
   providers: [DatePipe]
 })
 export class MovieSearchComponent implements OnDestroy {
@@ -33,6 +33,7 @@ export class MovieSearchComponent implements OnDestroy {
 
   isShowsMode = false;
   featuredMovie: Movie | null = null;
+  isFeaturedFavorite = false;
 
   // Recommended content for sliders
   recommendedMovies: Movie[] = [];
@@ -77,6 +78,7 @@ export class MovieSearchComponent implements OnDestroy {
         title: r.title ?? r.name,
         name: r.name,
         poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
         release_date: r.release_date ?? r.first_air_date ?? '',
         first_air_date: r.first_air_date,
         vote_average: r.vote_average ?? 0,
@@ -86,6 +88,7 @@ export class MovieSearchComponent implements OnDestroy {
       
       if (this.recommendedMovies.length > 0) {
         this.featuredMovie = this.recommendedMovies[0];
+        this.checkFeaturedFavoriteStatus();
       }
     });
 
@@ -96,6 +99,7 @@ export class MovieSearchComponent implements OnDestroy {
         title: r.name ?? r.title,
         name: r.name,
         poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
         release_date: r.first_air_date ?? r.release_date ?? '',
         first_air_date: r.first_air_date,
         vote_average: r.vote_average ?? 0,
@@ -111,6 +115,7 @@ export class MovieSearchComponent implements OnDestroy {
         title: r.name ?? r.title,
         name: r.name,
         poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
         release_date: r.first_air_date ?? r.release_date ?? '',
         first_air_date: r.first_air_date,
         vote_average: r.vote_average ?? 0,
@@ -293,7 +298,20 @@ export class MovieSearchComponent implements OnDestroy {
   addToFavorites(movie: Movie) {
     this.storage.addMovieToFavorites(movie);
     alert('Added to favorites!');
-    // Optionally reload favorites in UI if needed
+    this.checkFeaturedFavoriteStatus();
+  }
+
+  checkFeaturedFavoriteStatus() {
+    if (!this.featuredMovie) {
+      this.isFeaturedFavorite = false;
+      return;
+    }
+    const currentUser = this.storage.getCurrentUser();
+    if (currentUser && Array.isArray(currentUser.favoriteMovieIds)) {
+      this.isFeaturedFavorite = currentUser.favoriteMovieIds.includes(this.featuredMovie.id);
+    } else {
+      this.isFeaturedFavorite = false;
+    }
   }
 
   addToListPrompt(movie: Movie) {

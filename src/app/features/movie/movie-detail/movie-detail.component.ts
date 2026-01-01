@@ -38,7 +38,17 @@ export class MovieDetailComponent implements OnInit {
   private loadMovie(id: number) {
     this.tmdb.getMovieDetails(id).subscribe((data: any) => {
       this.movie = data;
+      this.setBackdropImage(data.backdrop_path || data.poster_path);
     });
+  }
+
+  private setBackdropImage(backdropPath: string | null): void {
+    if (backdropPath) {
+      const backdropUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
+      document.documentElement.style.setProperty('--detail-backdrop-image', `url('${backdropUrl}')`);
+    } else {
+      document.documentElement.style.setProperty('--detail-backdrop-image', 'none');
+    }
   }
 
   playMovie() {

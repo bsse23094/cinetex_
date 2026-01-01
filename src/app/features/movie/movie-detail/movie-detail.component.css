@@ -1,1 +1,20 @@
-/* Styles moved to global styles.css */
+/* Movie Detail Page with Blurred Backdrop */
+:host {
+  display: block;
+  position: relative;
+  min-height: 100vh;
+}
+
+:host::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: var(--detail-backdrop-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(25px) brightness(0.3);
+  transform: scale(1.1);
+  z-index: -1;
+  opacity: 0.6;
+}

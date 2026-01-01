@@ -7,12 +7,14 @@ import { FormsModule } from '@angular/forms';
 import { MovieService } from '../movie.service';
 import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
 import { combineLatest } from 'rxjs';
+import { StorageService } from '../../../core/services/storage.service';
+import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 
 
 @Component({
   selector: 'app-movie-player',
   templateUrl: './movie-player.component.html',
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, RatingStarsComponent],
   styleUrls: ['./movie-player.component.css']
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -52,11 +54,22 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   savedProgress: any = null;
   progressSaveInterval: any = null;
 
+  // Movie actions
+  isFavorite = false;
+  userRating = 0;
+  showRatingModal = false;
+  showListModal = false;
+  userLists: any[] = [];
+  selectedListIds: string[] = [];
+  newListTitle = '';
+  showNewListForm = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private sanitizer: DomSanitizer,
-    private movieService: MovieService
+    private movieService: MovieService,
+    private storage: StorageService
   ) {}
 
   ngOnInit(): void {
@@ -324,12 +337,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.allSeasons = Array.from({ length: this.totalSeasons }, (_, i) => i + 1);
           this.loading = false;
           
+          // Set backdrop image as CSS variable
+          this.setBackdropImage(data.backdrop_path);
+          
           // Load current season details to get episode count
           this.loadSeasonDetails(this.season);
           
           // Set video duration estimate (typical TV episode ~45 min)
           this.videoDuration = 2700; // 45 minutes in seconds
           this.creditsStart = this.videoDuration - 120; // Last 2 minutes
+          
+          // Check favorite status
+          this.checkFavoriteStatus();
         },
         error: (err) => {
           console.error('Error loading TV details:', err);
@@ -343,11 +362,17 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.mediaDetails = data;
           this.loading = false;
           
+          // Set backdrop image as CSS variable
+          this.setBackdropImage(data.backdrop_path);
+          
           // Set video duration for movies
           if (data.runtime) {
             this.videoDuration = data.runtime * 60; // Convert minutes to seconds
             this.creditsStart = this.videoDuration - 300; // Last 5 minutes
           }
+          
+          // Check favorite status
+          this.checkFavoriteStatus();
         },
         error: (err) => {
           console.error('Error loading movie details:', err);
@@ -476,6 +501,168 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .join(', ');
   }
   
+  setBackdropImage(backdropPath: string | null): void {
+    if (backdropPath) {
+      const backdropUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
+      document.documentElement.style.setProperty('--backdrop-image', `url('${backdropUrl}')`);
+    } else {
+      document.documentElement.style.setProperty('--backdrop-image', 'none');
+    }
+  }
+
+  // Movie Actions
+  checkFavoriteStatus(): void {
+    if (this.movieId && this.mediaDetails) {
+      const user = this.storage.getCurrentUser();
+      const numericId = parseInt(this.movieId, 10);
+      this.isFavorite = user.favoriteMovieIds.includes(numericId);
+      
+      // Check rating
+      const ratings = this.storage.get<{ [key: number]: number }>('ratings') || {};
+      this.userRating = ratings[numericId] || 0;
+    }
+  }
+
+  toggleFavorite(): void {
+    if (!this.mediaDetails) return;
+    
+    const movieObj = {
+      id: parseInt(this.movieId!, 10),
+      title: this.mediaDetails.title || this.mediaDetails.name,
+      poster_path: this.mediaDetails.poster_path,
+      backdrop_path: this.mediaDetails.backdrop_path,
+      vote_average: this.mediaDetails.vote_average,
+      release_date: this.mediaDetails.release_date || this.mediaDetails.first_air_date,
+      overview: this.mediaDetails.overview,
+      media_type: this.mediaType
+    };
+
+    if (this.isFavorite) {
+      this.storage.removeMovieFromFavorites(movieObj.id);
+      this.isFavorite = false;
+    } else {
+      this.storage.addMovieToFavorites(movieObj);
+      this.isFavorite = true;
+    }
+  }
+
+  openRatingModal(): void {
+    this.showRatingModal = true;
+  }
+
+  closeRatingModal(): void {
+    this.showRatingModal = false;
+  }
+
+  onRatingChange(rating: number): void {
+    this.userRating = rating;
+    const numericId = parseInt(this.movieId!, 10);
+    
+    // Save rating using storage service
+    const ratings = this.storage.get<{ [key: number]: number }>('ratings') || {};
+    ratings[numericId] = rating;
+    this.storage.set('ratings', ratings);
+    
+    // Save movie object to storage so it appears in rated movies
+    const movieObj = {
+      id: numericId,
+      title: this.mediaDetails.title || this.mediaDetails.name,
+      poster_path: this.mediaDetails.poster_path,
+      backdrop_path: this.mediaDetails.backdrop_path,
+      vote_average: this.mediaDetails.vote_average,
+      release_date: this.mediaDetails.release_date || this.mediaDetails.first_air_date,
+      overview: this.mediaDetails.overview,
+      media_type: this.mediaType
+    };
+    
+    const movies = this.storage.getMovies();
+    if (!movies.some((m: any) => m.id === numericId)) {
+      movies.push(movieObj);
+      this.storage.set('movies', movies);
+    }
+    
+    // Close modal after rating
+    setTimeout(() => {
+      this.closeRatingModal();
+    }, 500);
+  }
+
+  openListModal(): void {
+    this.userLists = this.storage.getLists();
+    this.selectedListIds = [];
+    this.showNewListForm = false;
+    this.newListTitle = '';
+    this.showListModal = true;
+  }
+
+  closeListModal(): void {
+    this.showListModal = false;
+    this.showNewListForm = false;
+    this.selectedListIds = [];
+    this.newListTitle = '';
+  }
+
+  toggleListSelection(listId: string): void {
+    const index = this.selectedListIds.indexOf(listId);
+    if (index > -1) {
+      this.selectedListIds.splice(index, 1);
+    } else {
+      this.selectedListIds.push(listId);
+    }
+  }
+
+  isListSelected(listId: string): boolean {
+    return this.selectedListIds.includes(listId);
+  }
+
+  toggleNewListForm(): void {
+    this.showNewListForm = !this.showNewListForm;
+    if (this.showNewListForm) {
+      this.newListTitle = '';
+    }
+  }
+
+  createNewList(): void {
+    if (!this.newListTitle.trim()) return;
+
+    const newList = {
+      id: this.newListTitle.trim().toLowerCase().replace(/\s+/g, '-'),
+      title: this.newListTitle.trim(),
+      movies: [],
+      created: new Date(),
+      updated: new Date(),
+      isPublic: false,
+      userId: 'me'
+    };
+
+    this.storage.addList(newList);
+    this.userLists = this.storage.getLists();
+    this.selectedListIds.push(newList.id);
+    this.newListTitle = '';
+    this.showNewListForm = false;
+  }
+
+  addToSelectedLists(): void {
+    if (!this.mediaDetails || this.selectedListIds.length === 0) return;
+
+    const movieObj = {
+      id: parseInt(this.movieId!, 10),
+      title: this.mediaDetails.title || this.mediaDetails.name,
+      poster_path: this.mediaDetails.poster_path,
+      backdrop_path: this.mediaDetails.backdrop_path,
+      vote_average: this.mediaDetails.vote_average,
+      release_date: this.mediaDetails.release_date || this.mediaDetails.first_air_date,
+      overview: this.mediaDetails.overview,
+      media_type: this.mediaType
+    };
+
+    for (const listId of this.selectedListIds) {
+      this.storage.addMovieToList(listId, movieObj);
+    }
+
+    this.closeListModal();
+  }
+
   formatTime(seconds: number): string {
     if (!seconds || seconds === 0) return '0:00';
     

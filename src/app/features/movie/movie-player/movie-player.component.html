@@ -134,13 +134,31 @@
       <div class="details-info">
         <h1>{{ mediaDetails.name }}</h1>
         <div class="details-meta">
-          <span class="badge">{{ mediaDetails.first_air_date | date:'yyyy' }}</span>
           <span class="badge"><i class="fas fa-star"></i> {{ mediaDetails.vote_average | number:'1.1-1' }}</span>
-          <span class="badge">{{ totalSeasons }} Seasons</span>
+          <span class="badge">{{ mediaDetails.first_air_date | date:'yyyy' }}</span>
+          <span class="badge">{{ totalSeasons }} {{ totalSeasons === 1 ? 'Season' : 'Seasons' }}</span>
+          <span class="badge" *ngIf="mediaDetails.status">{{ mediaDetails.status }}</span>
         </div>
         <p class="overview">{{ mediaDetails.overview }}</p>
         <div class="genres">
           <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
+            <i class="fas fa-heart" *ngIf="isFavorite"></i>
+            <i class="far fa-heart" *ngIf="!isFavorite"></i>
+            <span>{{ isFavorite ? 'Favorited' : 'Favorite' }}</span>
+          </button>
+          <button class="action-btn" (click)="openRatingModal()" title="Rate this show">
+            <i class="fas fa-star"></i>
+            <span>{{ userRating > 0 ? 'Rated ' + userRating + '/5' : 'Rate' }}</span>
+          </button>
+          <button class="action-btn" (click)="openListModal()" title="Add to List">
+            <i class="fas fa-plus"></i>
+            <span>Add to List</span>
+          </button>
         </div>
       </div>
     </div>
@@ -155,14 +173,109 @@
       <div class="details-info">
         <h1>{{ mediaDetails.title }}</h1>
         <div class="details-meta">
-          <span class="badge">{{ mediaDetails.release_date | date:'yyyy' }}</span>
           <span class="badge"><i class="fas fa-star"></i> {{ mediaDetails.vote_average | number:'1.1-1' }}</span>
+          <span class="badge">{{ mediaDetails.release_date | date:'yyyy' }}</span>
           <span class="badge" *ngIf="mediaDetails.runtime">{{ mediaDetails.runtime }} min</span>
+          <span class="badge" *ngIf="mediaDetails.status">{{ mediaDetails.status }}</span>
         </div>
         <p class="overview">{{ mediaDetails.overview }}</p>
         <div class="genres">
           <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
         </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
+            <i class="fas fa-heart" *ngIf="isFavorite"></i>
+            <i class="far fa-heart" *ngIf="!isFavorite"></i>
+            <span>{{ isFavorite ? 'Favorited' : 'Favorite' }}</span>
+          </button>
+          <button class="action-btn" (click)="openRatingModal()" title="Rate this movie">
+            <i class="fas fa-star"></i>
+            <span>{{ userRating > 0 ? 'Rated ' + userRating + '/5' : 'Rate' }}</span>
+          </button>
+          <button class="action-btn" (click)="openListModal()" title="Add to List">
+            <i class="fas fa-plus"></i>
+            <span>Add to List</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div class="modal-overlay" *ngIf="showRatingModal" (click)="closeRatingModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Rate {{ mediaDetails?.title || mediaDetails?.name }}</h3>
+        <button class="close-btn" (click)="closeRatingModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="rating-prompt">How would you rate this {{ mediaType === 'movie' ? 'movie' : 'show' }}?</p>
+        <app-rating-stars
+          [currentRating]="userRating"
+          [readonly]="false"
+          (ratingChange)="onRatingChange($event)">
+        </app-rating-stars>
+      </div>
+    </div>
+  </div>
+
+  <!-- List Selection Modal -->
+  <div class="modal-overlay" *ngIf="showListModal" (click)="closeListModal()">
+    <div class="modal-content list-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add to List</h3>
+        <button class="close-btn" (click)="closeListModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="list-selection">
+          <div *ngIf="userLists.length === 0" class="empty-state">
+            <i class="fas fa-layer-group"></i>
+            <p>No lists yet. Create one below!</p>
+          </div>
+          
+          <div *ngIf="userLists.length > 0" class="lists-grid">
+            <div *ngFor="let list of userLists" 
+                 class="list-option"
+                 [class.selected]="isListSelected(list.id)"
+                 (click)="toggleListSelection(list.id)">
+              <i class="fas" [class.fa-check-circle]="isListSelected(list.id)" [class.fa-circle]="!isListSelected(list.id)"></i>
+              <div class="list-info">
+                <span class="list-title">{{ list.title }}</span>
+                <span class="list-count">{{ list.movies?.length || 0 }} movies</span>
+              </div>
+            </div>
+          </div>
+          
+          <button class="btn-new-list" (click)="toggleNewListForm()">
+            <i class="fas fa-plus"></i>
+            {{ showNewListForm ? 'Cancel' : 'Create New List' }}
+          </button>
+          
+          <div *ngIf="showNewListForm" class="new-list-form">
+            <input 
+              type="text" 
+              [(ngModel)]="newListTitle" 
+              placeholder="Enter list name..."
+              class="list-input"
+              (keyup.enter)="createNewList()">
+            <button class="btn-create" (click)="createNewList()" [disabled]="!newListTitle.trim()">
+              <i class="fas fa-check"></i>
+              Create
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeListModal()">Cancel</button>
+        <button class="btn-add" (click)="addToSelectedLists()" [disabled]="selectedListIds.length === 0">
+          Add to {{ selectedListIds.length }} {{ selectedListIds.length === 1 ? 'List' : 'Lists' }}
+        </button>
       </div>
     </div>
   </div>

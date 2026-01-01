@@ -5,10 +5,12 @@ import { PosterUrlPipe } from '../../pipes/poster-url.pipe';
 import { Movie, MovieDetails } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
 
+import { BackdropUrlPipe } from '../../pipes/backdrop-url.pipe';
+
 @Component({
   selector: 'app-movie-card',
   standalone: true,
-  imports: [CommonModule, PosterUrlPipe],
+  imports: [CommonModule, PosterUrlPipe, BackdropUrlPipe],
   templateUrl: './movie-card.component.html',
   styleUrls: ['./movie-card.component.css']
 })

@@ -1,5 +1,22 @@
-.rating { font-size: 1.5rem; display: inline-flex; direction: ltr; gap: 6px; }
-.rating span { color: #6b7280; cursor: pointer; transition: transform 0.18s cubic-bezier(.2,.9,.2,1), color 160ms; margin: 0; display:inline-block; }
-.rating span.filled { color: #ffd54a; text-shadow: 0 6px 18px rgba(255,213,74,0.18); transform: scale(1.08); filter: drop-shadow(0 8px 20px rgba(255,213,74,0.08)); }
-.rating span:hover { transform: translateY(-4px) scale(1.18); }
-.rating span:focus { outline: none; transform: scale(1.12); box-shadow: 0 6px 18px rgba(0,0,0,0.28); }
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 2.5rem;
+}
+
+.rating span {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.rating span:hover {
+  transform: scale(1.15);
+}
+
+.rating span.filled {
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
