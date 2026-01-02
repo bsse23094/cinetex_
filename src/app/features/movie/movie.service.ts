@@ -13,6 +13,10 @@ export class MovieService {
   searchMovies(query: string, page = 1): Observable<any> {
     return this.tmdb.searchMovies(query, page);
   }
+  
+  multiSearch(query: string, page = 1): Observable<any> {
+    return this.tmdb.multiSearch(query, page);
+  }
 
   getMovieDetails(id: number): Observable<any> {
     return this.tmdb.getMovieDetails(id);

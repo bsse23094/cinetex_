@@ -55,6 +55,13 @@ input, textarea, select {
   background: transparent;
 }
 
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 ul, ol {
   list-style: none;
 }
@@ -236,6 +243,8 @@ ul, ol {
   display: flex;
   align-items: center;
   gap: var(--sp-4);
+  position: relative;
+  z-index: calc(var(--z-overlay) + 1);
 }
 
 .search-bar {
@@ -250,8 +259,14 @@ ul, ol {
   position: relative;
 }
 
+.search-bar:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
 .search-bar:focus-within {
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
   transform: translateY(-1px);
 }
 
@@ -271,6 +286,13 @@ ul, ol {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   transition: width var(--duration-base) var(--ease-out);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.search-bar input:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .search-bar:focus-within input {
@@ -300,10 +322,21 @@ ul, ol {
   display: none;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 5px;
   width: 40px;
   height: 40px;
   padding: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: calc(var(--z-overlay) + 1);
+  position: relative;
+  pointer-events: auto;
+}
+
+.mobile-menu-toggle:active {
+  opacity: 0.7;
 }
 
 .mobile-menu-toggle span {
@@ -1866,6 +1899,13 @@ ul, ol {
 
   .mobile-menu-toggle {
     display: flex;
+    pointer-events: auto;
+  }
+
+  .header-right {
+    z-index: calc(var(--z-overlay) + 1);
+    position: relative;
+    pointer-events: auto;
   }
 
   .nav-links {
@@ -1878,10 +1918,13 @@ ul, ol {
     align-items: stretch;
     gap: var(--sp-2);
     padding: var(--sp-4);
-    background: var(--surface-base);
+    background: rgba(5, 5, 8, 0.98);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
     transform: translateX(-100%);
     transition: transform var(--duration-slow) var(--ease-out);
     z-index: var(--z-overlay);
+    overflow-y: auto;
   }
 
   .nav-links.mobile-open {

@@ -177,6 +177,109 @@
 }
 
 /* =====================================================================
+   CURRENT EPISODE BADGE (OVER PLAYER)
+   ===================================================================== */
+.current-episode-badge {
+  position: absolute;
+  top: var(--sp-4);
+  left: var(--sp-4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(99, 102, 241, 0.95) 100%);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInFromLeft 0.4s var(--ease-out);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.current-episode-badge .episode-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.current-episode-badge .episode-info {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--on-accent);
+  font-family: 'Courier New', monospace;
+}
+
+/* =====================================================================
+   EPISODE NAVIGATION BUTTONS (OVER PLAYER)
+   ===================================================================== */
+.episode-nav-buttons {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  display: flex;
+  gap: var(--sp-2);
+  z-index: 5;
+  animation: slideInFromRight 0.4s var(--ease-out);
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.episode-nav-btn {
+  padding: var(--sp-3) var(--sp-5);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--on-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+.episode-nav-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+.episode-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.episode-nav-btn i {
+  font-size: var(--text-base);
+}
+
+/* =====================================================================
    NEXT EPISODE OVERLAY
    ===================================================================== */
 .next-episode-overlay {
@@ -465,6 +568,57 @@
   font-weight: var(--weight-bold);
   color: var(--accent);
   z-index: 2;
+}
+
+.current-playing-indicator {
+  position: absolute;
+  bottom: var(--sp-2);
+  right: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(99, 102, 241, 0.95) 100%);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--on-accent);
+  z-index: 2;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.current-playing-indicator i {
+  font-size: 8px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.episode-card.current-playing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+}
+
+.episode-card.current-playing .episode-overlay {
+  opacity: 1;
+  background: rgba(139, 92, 246, 0.2);
 }
 
 .episode-thumbnail img {

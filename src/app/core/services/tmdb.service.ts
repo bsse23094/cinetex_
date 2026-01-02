@@ -12,6 +12,13 @@ export class TMDBService {
       `${environment.tmdbBaseUrl}/search/movie?api_key=${environment.tmdbApiKey}&query=${query}&page=${page}`
     );
   }
+  
+  // Multi-search: searches across movies, TV shows, and people
+  multiSearch(query: string, page = 1) {
+    return this.http.get(
+      `${environment.tmdbBaseUrl}/search/multi?api_key=${environment.tmdbApiKey}&query=${query}&page=${page}`
+    );
+  }
 
   getMovieDetails(id: number) {
     return this.http.get(

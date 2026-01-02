@@ -163,52 +163,41 @@ export class MovieSearchComponent implements OnDestroy {
     
     console.log('Starting search for:', this.query);
     
-    // Search both movies and TV shows
-    const movieSearch$ = this.movieService.searchMovies(this.query);
-    const tvSearch$ = this.movieService.searchTv(this.query);
-    
-    // Combine results from both searches
-    Promise.all([
-      movieSearch$.toPromise(),
-      tvSearch$.toPromise()
-    ]).then(([movieRes, tvRes]: any[]) => {
-      console.log('Movie results:', movieRes?.results?.length || 0);
-      console.log('TV results:', tvRes?.results?.length || 0);
-      
-      const movies = (movieRes?.results || []).map((r: any) => ({
-        id: r.id,
-        title: r.title ?? r.name,
-        name: r.name,
-        poster_path: r.poster_path ?? null,
-        release_date: r.release_date ?? r.first_air_date ?? '',
-        first_air_date: r.first_air_date,
-        vote_average: r.vote_average ?? 0,
-        overview: r.overview ?? '',
-        media_type: 'movie'
-      }));
-      
-      const shows = (tvRes?.results || []).map((r: any) => ({
-        id: r.id,
-        title: r.name ?? r.title,
-        name: r.name,
-        poster_path: r.poster_path ?? null,
-        release_date: r.first_air_date ?? r.release_date ?? '',
-        first_air_date: r.first_air_date,
-        vote_average: r.vote_average ?? 0,
-        overview: r.overview ?? '',
-        media_type: 'tv'
-      }));
-      
-      // Combine and sort by popularity (vote_average)
-      this.results = [...movies, ...shows].sort((a, b) => b.vote_average - a.vote_average);
-      
-      console.log('Combined search results:', this.results.length, 'items');
-      console.log('Movies:', movies.length, 'Shows:', shows.length);
-      this.loading = false;
-      this.loadRatings();
-    }).catch(error => {
-      console.error('Search error:', error);
-      this.loading = false;
+    // Use multi-search to find movies, TV shows, and people
+    this.movieService.multiSearch(this.query).subscribe({
+      next: (res: any) => {
+        console.log('Multi-search raw results:', res);
+        console.log('Multi-search results count:', res?.results?.length || 0);
+        
+        // Filter to only movies and TV shows (exclude people)
+        this.results = (res?.results || [])
+          .filter((r: any) => {
+            const isValidMedia = r.media_type === 'movie' || r.media_type === 'tv';
+            console.log('Item:', r.title || r.name, 'Type:', r.media_type, 'Valid:', isValidMedia);
+            return isValidMedia;
+          })
+          .map((r: any) => ({
+            id: r.id,
+            title: r.title ?? r.name,
+            name: r.name,
+            poster_path: r.poster_path ?? null,
+            backdrop_path: r.backdrop_path ?? null,
+            release_date: r.release_date ?? r.first_air_date ?? '',
+            first_air_date: r.first_air_date,
+            vote_average: r.vote_average ?? 0,
+            overview: r.overview ?? '',
+            media_type: r.media_type
+          }));
+        
+        console.log('Filtered search results:', this.results.length, 'items');
+        console.log('Results:', this.results.map(r => ({ title: r.title, type: r.media_type })));
+        this.loading = false;
+        this.loadRatings();
+      },
+      error: (error) => {
+        console.error('Search error:', error);
+        this.loading = false;
+      }
     });
   }
 

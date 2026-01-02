@@ -261,6 +261,60 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
   
+  hasPreviousEpisode(): boolean {
+    if (this.mediaType !== 'tv' || !this.mediaDetails) return false;
+    
+    // Check if there's a previous episode in current season
+    if (this.episode > 1) return true;
+    
+    // Check if there's a previous season
+    if (this.season > 1) return true;
+    
+    return false;
+  }
+  
+  playPreviousEpisode(): void {
+    if (!this.hasPreviousEpisode()) return;
+    
+    // Reset states
+    this.showNextEpisode = false;
+    this.videoCurrentTime = 0;
+    this.videoDuration = 0;
+    
+    if (this.episode > 1) {
+      // Previous episode in same season
+      this.episode--;
+    } else if (this.season > 1) {
+      // Last episode of previous season
+      this.season--;
+      this.loadSeasonDetails(this.season);
+      
+      // We need to wait for season details to load to get the last episode number
+      setTimeout(() => {
+        this.episode = this.totalEpisodesInSeason;
+        this.setVideoUrl();
+        this.updateUrlParams();
+      }, 500);
+      return; // Exit early, we'll update URL after season loads
+    }
+    
+    this.setVideoUrl();
+    this.updateUrlParams();
+  }
+  
+  updateUrlParams(): void {
+    // Update URL
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        type: this.mediaType,
+        season: this.season,
+        episode: this.episode
+      },
+      queryParamsHandling: 'merge'
+    });
+  }
+  
   startNextEpisodeCountdown(): void {
     this.nextEpisodeCountdown = 10;
     
@@ -307,17 +361,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     
     this.setVideoUrl();
-    
-    // Update URL
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        type: this.mediaType,
-        season: this.season,
-        episode: this.episode
-      },
-      queryParamsHandling: 'merge'
-    });
+    this.updateUrlParams();
   }
 
   loadMediaDetails() {

@@ -40,6 +40,32 @@
         <p>No video available</p>
       </div>
       
+      <!-- Current Episode Badge (for TV shows) -->
+      <div *ngIf="mediaType === 'tv'" class="current-episode-badge">
+        <span class="episode-label">Now Playing</span>
+        <span class="episode-info">S{{ season }}:E{{ episode < 10 ? '0' + episode : episode }}</span>
+      </div>
+      
+      <!-- Episode Navigation Buttons (for TV shows) -->
+      <div *ngIf="mediaType === 'tv'" class="episode-nav-buttons">
+        <button 
+          class="episode-nav-btn prev" 
+          (click)="playPreviousEpisode()" 
+          [disabled]="!hasPreviousEpisode()"
+          title="Previous Episode">
+          <i class="fas fa-chevron-left"></i>
+          <span>Previous</span>
+        </button>
+        <button 
+          class="episode-nav-btn next" 
+          (click)="playNextEpisode()" 
+          [disabled]="!hasNextEpisode()"
+          title="Next Episode">
+          <span>Next</span>
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
       <!-- Next Episode Overlay -->
       <div *ngIf="showNextEpisode" class="next-episode-overlay">
         <button class="close-next" (click)="cancelNextEpisode()">
@@ -99,15 +125,20 @@
       <div class="episode-card" 
            *ngFor="let ep of seasonDetails.episodes" 
            (click)="playEpisode(ep.episode_number)"
-           [class.active]="ep.episode_number === episode">
+           [class.active]="ep.episode_number === episode"
+           [class.current-playing]="ep.episode_number === episode">
         <div class="episode-thumbnail">
           <img [src]="getEpisodeThumbnail(ep)" alt="Episode {{ ep.episode_number }}">
           <div class="episode-overlay">
             <div class="play-icon">
-              <i class="fas fa-play"></i>
+              <i class="fas" [class.fa-play]="ep.episode_number !== episode" [class.fa-pause]="ep.episode_number === episode"></i>
             </div>
           </div>
           <div class="episode-number-badge">{{ ep.episode_number }}</div>
+          <div *ngIf="ep.episode_number === episode" class="current-playing-indicator">
+            <i class="fas fa-circle"></i>
+            <span>Now Playing</span>
+          </div>
         </div>
         <div class="episode-info">
           <h4>{{ ep.name }}</h4>
