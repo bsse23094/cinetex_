@@ -1,5 +1,5 @@
 // src/app/app.component.ts
-import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { Component, OnInit, HostListener, inject, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { LoadingScreenComponent } from './shared/components/loading-screen/loading-screen.component';
@@ -20,6 +20,7 @@ export class AppComponent implements OnInit {
   isScrolled = false;
   mobileMenuOpen = false;
   private router = inject(Router);
+  private renderer = inject(Renderer2);
 
   ngOnInit() {
     // Simulate loading time - adjust as needed
@@ -35,10 +36,21 @@ export class AppComponent implements OnInit {
 
   toggleMobileMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
+    this.updateBodyOverflow();
   }
 
   closeMobileMenu() {
     this.mobileMenuOpen = false;
+    this.updateBodyOverflow();
+  }
+
+  private updateBodyOverflow() {
+    const body = document.body;
+    if (this.mobileMenuOpen) {
+      this.renderer.setStyle(body, 'overflow', 'hidden');
+    } else {
+      this.renderer.removeStyle(body, 'overflow');
+    }
   }
 
   onSearch(query: string) {
