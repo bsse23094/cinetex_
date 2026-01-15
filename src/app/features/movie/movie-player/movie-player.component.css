@@ -1044,16 +1044,31 @@
 }
 
 /* =====================================================================
-   RESPONSIVE - Mobile Friendly
+   RESPONSIVE - Tablet
    ===================================================================== */
 @media (max-width: 768px) {
   .player-page {
     padding-top: 0;
   }
 
+  .continue-banner {
+    padding: var(--sp-3) var(--sp-4);
+  }
+
   .continue-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--sp-3);
+  }
+
+  .continue-icon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--text-lg);
+  }
+
+  .continue-info h3 {
+    font-size: var(--text-base);
   }
 
   .continue-actions {
@@ -1064,10 +1079,60 @@
   .continue-actions .btn-secondary {
     flex: 1;
     justify-content: center;
+    padding: var(--sp-2) var(--sp-4);
+    font-size: var(--text-sm);
+  }
+
+  .player-controls {
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  .toggle-btn {
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--text-xs);
+  }
+
+  .episodes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: 0 var(--sp-4);
+  }
+
+  .episodes-header h2 {
+    font-size: var(--text-lg);
+  }
+
+  .season-dropdown-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .season-dropdown {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .episodes-grid {
+    padding: 0 var(--sp-4);
+    -webkit-overflow-scrolling: touch;
   }
 
   .episode-card {
     flex: 0 0 260px;
+  }
+
+  .episode-info h4 {
+    font-size: var(--text-sm);
+  }
+
+  .episode-meta {
+    font-size: 11px;
+  }
+
+  .details-section {
+    padding: var(--sp-6) var(--sp-4);
   }
 
   .details-content {
@@ -1078,18 +1143,108 @@
   .details-poster {
     flex: 0 0 auto;
     width: 140px;
+    margin: 0 auto;
+  }
+
+  .details-info {
+    text-align: center;
   }
 
   .details-info h1 {
     font-size: var(--text-2xl);
   }
 
+  .details-meta {
+    justify-content: center;
+  }
+
+  .overview {
+    text-align: left;
+    font-size: var(--text-sm);
+  }
+
   .action-buttons {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .action-btn {
     flex: 1;
+    min-width: 45%;
     justify-content: center;
+    padding: var(--sp-3);
+    font-size: var(--text-sm);
+  }
+}
+
+/* =====================================================================
+   RESPONSIVE - Small Mobile
+   ===================================================================== */
+@media (max-width: 480px) {
+  .continue-banner {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .continue-icon {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-base);
+  }
+
+  .continue-info h3 {
+    font-size: var(--text-sm);
+  }
+
+  .continue-info p {
+    font-size: var(--text-xs);
+  }
+
+  .continue-actions .btn-primary,
+  .continue-actions .btn-secondary {
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--text-xs);
+  }
+
+  .toggle-btn span {
+    display: none;
+  }
+
+  .episode-card {
+    flex: 0 0 200px;
+  }
+
+  .details-poster {
+    width: 120px;
+  }
+
+  .details-info h1 {
+    font-size: var(--text-xl);
+  }
+
+  .details-meta .badge {
+    font-size: 10px;
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .genres-list .genre-tag {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .action-btn {
+    min-width: 100%;
+  }
+
+  /* Modal adjustments */
+  .rating-modal,
+  .list-modal {
+    margin: var(--sp-3);
+    padding: var(--sp-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .rating-modal h3,
+  .list-modal h3 {
+    font-size: var(--text-lg);
   }
 }
