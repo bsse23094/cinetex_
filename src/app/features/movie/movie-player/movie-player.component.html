@@ -11,7 +11,8 @@
           Last watched: <span class="highlight">{{ savedProgress.seasonName }}</span>
         </p>
         <p *ngIf="mediaType === 'movie' && savedProgress.progress">
-          Progress: <span class="highlight">{{ formatTime(savedProgress.progress) }} / {{ formatTime(savedProgress.duration) }}</span>
+          Progress: <span class="highlight">{{ formatTime(savedProgress.progress) }} / {{
+            formatTime(savedProgress.duration) }}</span>
         </p>
       </div>
       <div class="continue-actions">
@@ -28,44 +29,34 @@
   <!-- Video Player -->
   <div class="player-wrapper">
     <div class="player-container">
-      <iframe #videoIframe
-              *ngIf="trustedVideoUrl"
-              [src]="trustedVideoUrl"
-              frameborder="0"
-              allowfullscreen
-              allow="autoplay; encrypted-media">
+      <iframe #videoIframe *ngIf="trustedVideoUrl" [src]="trustedVideoUrl" frameborder="0" allowfullscreen
+        allow="autoplay; encrypted-media">
       </iframe>
       <div *ngIf="!trustedVideoUrl" class="no-video-state">
         <i class="fas fa-video-slash"></i>
         <p>No video available</p>
       </div>
-      
+
       <!-- Current Episode Badge (for TV shows) -->
       <div *ngIf="mediaType === 'tv'" class="current-episode-badge">
         <span class="episode-label">Now Playing</span>
         <span class="episode-info">S{{ season }}:E{{ episode < 10 ? '0' + episode : episode }}</span>
       </div>
-      
+
       <!-- Episode Navigation Buttons (for TV shows) -->
       <div *ngIf="mediaType === 'tv'" class="episode-nav-buttons">
-        <button 
-          class="episode-nav-btn prev" 
-          (click)="playPreviousEpisode()" 
-          [disabled]="!hasPreviousEpisode()"
+        <button class="episode-nav-btn prev" (click)="playPreviousEpisode()" [disabled]="!hasPreviousEpisode()"
           title="Previous Episode">
           <i class="fas fa-chevron-left"></i>
           <span>Previous</span>
         </button>
-        <button 
-          class="episode-nav-btn next" 
-          (click)="playNextEpisode()" 
-          [disabled]="!hasNextEpisode()"
+        <button class="episode-nav-btn next" (click)="playNextEpisode()" [disabled]="!hasNextEpisode()"
           title="Next Episode">
           <span>Next</span>
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
-      
+
       <!-- Next Episode Overlay -->
       <div *ngIf="showNextEpisode" class="next-episode-overlay">
         <button class="close-next" (click)="cancelNextEpisode()">
@@ -79,11 +70,10 @@
             <h4>Next Episode</h4>
             <p class="episode-number">
               <ng-container *ngIf="episode < totalEpisodesInSeason">
-                S{{ season }}:E{{ (episode + 1) < 10 ? '0' + (episode + 1) : (episode + 1) }}
-              </ng-container>
-              <ng-container *ngIf="episode >= totalEpisodesInSeason && season < totalSeasons">
-                S{{ season + 1 }}:E01
-              </ng-container>
+                S{{ season }}:E{{ (episode + 1) < 10 ? '0' + (episode + 1) : (episode + 1) }} </ng-container>
+                  <ng-container *ngIf="episode >= totalEpisodesInSeason && season < totalSeasons">
+                    S{{ season + 1 }}:E01
+                  </ng-container>
             </p>
             <p class="countdown">Playing in <span>{{ nextEpisodeCountdown }}s</span></p>
           </div>
@@ -112,26 +102,31 @@
   <!-- Episodes Section -->
   <div *ngIf="mediaType === 'tv' && !showDetails && mediaDetails" class="episodes-section">
     <div class="episodes-header">
-      <h2><i class="fas fa-list"></i> Episodes</h2>
-      <div class="season-selector">
-        <label for="season-select">Season</label>
-        <select id="season-select" [(ngModel)]="season" (change)="onSeasonChange(season)">
-          <option *ngFor="let s of allSeasons" [value]="s">{{ s }}</option>
-        </select>
+      <h2>Episodes</h2>
+      <div class="season-selector-wrapper">
+        <button class="season-dropdown-btn" (click)="showSeasonDropdown = !showSeasonDropdown">
+          <span>Season {{ season }}</span>
+          <i class="fas fa-chevron-down" [class.rotated]="showSeasonDropdown"></i>
+        </button>
+        <div class="season-dropdown" *ngIf="showSeasonDropdown">
+          <button *ngFor="let s of allSeasons" class="season-option" [class.active]="s === season"
+            (click)="onSeasonChange(s); showSeasonDropdown = false">
+            Season {{ s }}
+            <i *ngIf="s === season" class="fas fa-check"></i>
+          </button>
+        </div>
       </div>
     </div>
-    
+
     <div class="episodes-grid" *ngIf="seasonDetails && !loadingEpisodes">
-      <div class="episode-card" 
-           *ngFor="let ep of seasonDetails.episodes" 
-           (click)="playEpisode(ep.episode_number)"
-           [class.active]="ep.episode_number === episode"
-           [class.current-playing]="ep.episode_number === episode">
+      <div class="episode-card" *ngFor="let ep of seasonDetails.episodes" (click)="playEpisode(ep.episode_number)"
+        [class.active]="ep.episode_number === episode" [class.current-playing]="ep.episode_number === episode">
         <div class="episode-thumbnail">
           <img [src]="getEpisodeThumbnail(ep)" alt="Episode {{ ep.episode_number }}">
           <div class="episode-overlay">
             <div class="play-icon">
-              <i class="fas" [class.fa-play]="ep.episode_number !== episode" [class.fa-pause]="ep.episode_number === episode"></i>
+              <i class="fas" [class.fa-play]="ep.episode_number !== episode"
+                [class.fa-pause]="ep.episode_number === episode"></i>
             </div>
           </div>
           <div class="episode-number-badge">{{ ep.episode_number }}</div>
@@ -146,10 +141,11 @@
             <span>{{ ep.runtime ? ep.runtime + ' min' : '' }}</span>
             <span *ngIf="ep.vote_average"><i class="fas fa-star"></i> {{ ep.vote_average | number:'1.1-1' }}</span>
           </p>
+          <p class="episode-overview" *ngIf="ep.overview">{{ ep.overview }}</p>
         </div>
       </div>
     </div>
-    
+
     <div *ngIf="loadingEpisodes" class="loading-state">
       <div class="spinner"></div>
       <p>Loading episodes...</p>
@@ -174,7 +170,7 @@
         <div class="genres">
           <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
         </div>
-        
+
         <!-- Action Buttons -->
         <div class="action-buttons">
           <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
@@ -213,7 +209,7 @@
         <div class="genres">
           <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
         </div>
-        
+
         <!-- Action Buttons -->
         <div class="action-buttons">
           <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
@@ -245,10 +241,7 @@
       </div>
       <div class="modal-body">
         <p class="rating-prompt">How would you rate this {{ mediaType === 'movie' ? 'movie' : 'show' }}?</p>
-        <app-rating-stars
-          [currentRating]="userRating"
-          [readonly]="false"
-          (ratingChange)="onRatingChange($event)">
+        <app-rating-stars [currentRating]="userRating" [readonly]="false" (ratingChange)="onRatingChange($event)">
         </app-rating-stars>
       </div>
     </div>
@@ -269,31 +262,26 @@
             <i class="fas fa-layer-group"></i>
             <p>No lists yet. Create one below!</p>
           </div>
-          
+
           <div *ngIf="userLists.length > 0" class="lists-grid">
-            <div *ngFor="let list of userLists" 
-                 class="list-option"
-                 [class.selected]="isListSelected(list.id)"
-                 (click)="toggleListSelection(list.id)">
-              <i class="fas" [class.fa-check-circle]="isListSelected(list.id)" [class.fa-circle]="!isListSelected(list.id)"></i>
+            <div *ngFor="let list of userLists" class="list-option" [class.selected]="isListSelected(list.id)"
+              (click)="toggleListSelection(list.id)">
+              <i class="fas" [class.fa-check-circle]="isListSelected(list.id)"
+                [class.fa-circle]="!isListSelected(list.id)"></i>
               <div class="list-info">
                 <span class="list-title">{{ list.title }}</span>
                 <span class="list-count">{{ list.movies?.length || 0 }} movies</span>
               </div>
             </div>
           </div>
-          
+
           <button class="btn-new-list" (click)="toggleNewListForm()">
             <i class="fas fa-plus"></i>
             {{ showNewListForm ? 'Cancel' : 'Create New List' }}
           </button>
-          
+
           <div *ngIf="showNewListForm" class="new-list-form">
-            <input 
-              type="text" 
-              [(ngModel)]="newListTitle" 
-              placeholder="Enter list name..."
-              class="list-input"
+            <input type="text" [(ngModel)]="newListTitle" placeholder="Enter list name..." class="list-input"
               (keyup.enter)="createNewList()">
             <button class="btn-create" (click)="createNewList()" [disabled]="!newListTitle.trim()">
               <i class="fas fa-check"></i>

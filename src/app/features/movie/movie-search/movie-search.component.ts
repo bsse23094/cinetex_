@@ -9,12 +9,14 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
 import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
 import { BackdropUrlPipe } from '../../../shared/pipes/backdrop-url.pipe';
 
+import { MovieHoverCardComponent } from '../movie-hover-card/movie-hover-card.component';
+
 @Component({
   selector: 'app-movie-search',
   templateUrl: './movie-search.component.html',
   styleUrls: ['./movie-search.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterUrlPipe, BackdropUrlPipe],
+  imports: [CommonModule, FormsModule, PosterUrlPipe, BackdropUrlPipe, MovieHoverCardComponent],
   providers: [DatePipe]
 })
 export class MovieSearchComponent implements OnDestroy {
@@ -39,13 +41,30 @@ export class MovieSearchComponent implements OnDestroy {
   recommendedMovies: Movie[] = [];
   recommendedShows: Movie[] = [];
   recommendedAnime: Movie[] = [];
+
+  // New category sliders
+  actionMovies: Movie[] = [];
+  topRatedMovies: Movie[] = [];
+  nowPlayingMovies: Movie[] = [];
+  thrillerMovies: Movie[] = [];
+
   allContent: Movie[] = []; // Combined content for unified slider
-  
+
+  // Search filter state
+  activeFilter: string = 'all';
+  allResults: Movie[] = []; // Store unfiltered results
+
+  // Hover Card Logic
+  hoveredMovie: Movie | null = null;
+  hoverTimeout: any;
+  hoverCardPosition = { top: 0, left: 0, width: 0 };
+  containerWidth = 0;
+
   @ViewChild('unifiedCarousel') carouselRef!: ElementRef;
-  
+
   constructor(private movieService: MovieService, private storage: StorageService, public router: Router, private route: ActivatedRoute) {
     this.loadRatings();
-    
+
     // Subscribe to query params for search and type switching
     this.route.queryParams.subscribe(params => {
       if (params['query']) {
@@ -55,7 +74,7 @@ export class MovieSearchComponent implements OnDestroy {
         this.query = '';
         this.results = [];
       }
-      
+
       if (params['type']) {
         this.isShowsMode = params['type'] === 'tv';
         // If we are just switching modes without a query, we might want to reload recommendations or just stay on home
@@ -85,7 +104,7 @@ export class MovieSearchComponent implements OnDestroy {
         overview: r.overview ?? '',
         media_type: 'movie'
       } as Movie));
-      
+
       if (this.recommendedMovies.length > 0) {
         this.featuredMovie = this.recommendedMovies[0];
         this.checkFeaturedFavoriteStatus();
@@ -122,13 +141,73 @@ export class MovieSearchComponent implements OnDestroy {
         overview: r.overview ?? '',
         media_type: 'tv' as any
       } as Movie));
-      
+
       // Combine all content for unified slider
       this.allContent = [
         ...this.recommendedMovies.slice(0, 10),
         ...this.recommendedShows.slice(0, 8),
         ...this.recommendedAnime.slice(0, 7)
       ];
+    });
+
+    // Fetch Action Movies (genre 28)
+    this.movieService.discoverMoviesByGenre(28, 1).subscribe((res: any) => {
+      this.actionMovies = (res.results || []).slice(0, 15).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
+        release_date: r.release_date ?? '',
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      } as Movie));
+    });
+
+    // Fetch Top Rated Movies
+    this.movieService.getTopRatedMovies(1).subscribe((res: any) => {
+      this.topRatedMovies = (res.results || []).slice(0, 15).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
+        release_date: r.release_date ?? '',
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      } as Movie));
+    });
+
+    // Fetch Now Playing Movies
+    this.movieService.getNowPlayingMovies(1).subscribe((res: any) => {
+      this.nowPlayingMovies = (res.results || []).slice(0, 15).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
+        release_date: r.release_date ?? '',
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      } as Movie));
+    });
+
+    // Fetch Thriller Movies (genre 53)
+    this.movieService.discoverMoviesByGenre(53, 1).subscribe((res: any) => {
+      this.thrillerMovies = (res.results || []).slice(0, 15).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? r.name,
+        name: r.name,
+        poster_path: r.poster_path ?? null,
+        backdrop_path: r.backdrop_path ?? null,
+        release_date: r.release_date ?? '',
+        vote_average: r.vote_average ?? 0,
+        overview: r.overview ?? '',
+        media_type: 'movie'
+      } as Movie));
     });
   }
 
@@ -160,44 +239,120 @@ export class MovieSearchComponent implements OnDestroy {
   search() {
     if (!this.query.trim()) return;
     this.loading = true;
-    
-    console.log('Starting search for:', this.query);
-    
+
     // Use multi-search to find movies, TV shows, and people
     this.movieService.multiSearch(this.query).subscribe({
       next: (res: any) => {
-        console.log('Multi-search raw results:', res);
-        console.log('Multi-search results count:', res?.results?.length || 0);
-        
-        // Filter to only movies and TV shows (exclude people)
-        this.results = (res?.results || [])
-          .filter((r: any) => {
-            const isValidMedia = r.media_type === 'movie' || r.media_type === 'tv';
-            console.log('Item:', r.title || r.name, 'Type:', r.media_type, 'Valid:', isValidMedia);
-            return isValidMedia;
-          })
-          .map((r: any) => ({
-            id: r.id,
-            title: r.title ?? r.name,
-            name: r.name,
-            poster_path: r.poster_path ?? null,
-            backdrop_path: r.backdrop_path ?? null,
-            release_date: r.release_date ?? r.first_air_date ?? '',
-            first_air_date: r.first_air_date,
-            vote_average: r.vote_average ?? 0,
-            overview: r.overview ?? '',
-            media_type: r.media_type
-          }));
-        
-        console.log('Filtered search results:', this.results.length, 'items');
-        console.log('Results:', this.results.map(r => ({ title: r.title, type: r.media_type })));
-        this.loading = false;
-        this.loadRatings();
+        const allResults = res?.results || [];
+
+        // Separate movies/TV and people
+        const mediaResults = allResults.filter((r: any) => r.media_type === 'movie' || r.media_type === 'tv');
+        const personResults = allResults.filter((r: any) => r.media_type === 'person');
+
+        // Map media results
+        let mappedResults = mediaResults.map((r: any) => ({
+          id: r.id,
+          title: r.title ?? r.name,
+          name: r.name,
+          poster_path: r.poster_path ?? null,
+          backdrop_path: r.backdrop_path ?? null,
+          release_date: r.release_date ?? r.first_air_date ?? '',
+          first_air_date: r.first_air_date,
+          vote_average: r.vote_average ?? 0,
+          overview: r.overview ?? '',
+          media_type: r.media_type,
+          genre_ids: r.genre_ids || []
+        }));
+
+        // If we found people (actors/directors), fetch their credits
+        if (personResults.length > 0) {
+          // Get credits for up to 3 people to avoid too many requests
+          const personCreditsPromises = personResults.slice(0, 3).map((person: any) =>
+            this.movieService.getPersonCredits(person.id).toPromise()
+          );
+
+          Promise.all(personCreditsPromises).then((creditsResults: any[]) => {
+            creditsResults.forEach((credits: any) => {
+              if (credits?.cast) {
+                // Add cast credits (movies/shows the person acted in)
+                const castCredits = credits.cast
+                  .filter((c: any) => c.poster_path || c.backdrop_path)
+                  .slice(0, 10)
+                  .map((c: any) => ({
+                    id: c.id,
+                    title: c.title ?? c.name,
+                    name: c.name,
+                    poster_path: c.poster_path ?? null,
+                    backdrop_path: c.backdrop_path ?? null,
+                    release_date: c.release_date ?? c.first_air_date ?? '',
+                    first_air_date: c.first_air_date,
+                    vote_average: c.vote_average ?? 0,
+                    overview: c.overview ?? '',
+                    media_type: c.media_type || (c.title ? 'movie' : 'tv'),
+                    genre_ids: c.genre_ids || []
+                  }));
+                mappedResults = [...mappedResults, ...castCredits];
+              }
+            });
+
+            // Remove duplicates by ID
+            const seen = new Set();
+            this.results = mappedResults.filter((item: any) => {
+              const key = `${item.media_type}-${item.id}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
+            this.loading = false;
+            this.loadRatings();
+          }).catch(() => {
+            // If credits fetch fails, just show direct results
+            this.results = mappedResults;
+            this.allResults = [...mappedResults]; // Store for filtering
+            this.activeFilter = 'all';
+            this.loading = false;
+            this.loadRatings();
+          });
+        } else {
+          this.results = mappedResults;
+          this.allResults = [...mappedResults]; // Store for filtering
+          this.activeFilter = 'all';
+          this.loading = false;
+          this.loadRatings();
+        }
       },
       error: (error) => {
         console.error('Search error:', error);
         this.loading = false;
       }
+    });
+  }
+
+  // Filter results by media type
+  filterResults(filterType: string) {
+    this.activeFilter = filterType;
+
+    if (filterType === 'all') {
+      this.results = [...this.allResults];
+    } else if (filterType === 'movie' || filterType === 'tv') {
+      this.results = this.allResults.filter((item: any) => item.media_type === filterType);
+    }
+  }
+
+  // Filter by genre ID
+  filterByGenre(genreId: number) {
+    const genreMap: { [key: number]: string } = {
+      28: 'action',
+      35: 'comedy',
+      18: 'drama'
+    };
+
+    this.activeFilter = genreMap[genreId] || 'all';
+
+    this.results = this.allResults.filter((item: any) => {
+      const genres = item.genre_ids || [];
+      return genres.includes(genreId);
     });
   }
 
@@ -208,14 +363,14 @@ export class MovieSearchComponent implements OnDestroy {
   watchMedia(movie: Movie) {
     // Check the actual media_type of the item
     const mediaType = this.getMediaType(movie);
-    
+
     if (mediaType === 'tv') {
       this.router.navigate(['/watch', movie.id], { queryParams: { type: 'tv', season: 1, episode: 1 } });
     } else {
       this.router.navigate(['/watch', movie.id]);
     }
   }
-  
+
   scrollSlider(direction: 'left' | 'right') {
     if (this.carouselRef) {
       const scrollAmount = 400;
@@ -227,7 +382,7 @@ export class MovieSearchComponent implements OnDestroy {
       }
     }
   }
-  
+
   pauseScroll(event: Event) {
     const target = event.target as HTMLElement;
     const track = target.closest('.slider-track') as HTMLElement;
@@ -235,7 +390,7 @@ export class MovieSearchComponent implements OnDestroy {
       track.classList.add('paused');
     }
   }
-  
+
   resumeScroll(event: Event) {
     const target = event.target as HTMLElement;
     const track = target.closest('.slider-track') as HTMLElement;
@@ -243,18 +398,18 @@ export class MovieSearchComponent implements OnDestroy {
       track.classList.remove('paused');
     }
   }
-  
+
   scrollSliderLeft(event: Event) {
-    const button = event.target as HTMLElement;
+    const button = event.currentTarget as HTMLElement;
     const sliderRow = button.closest('.slider-row') as HTMLElement;
     const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
     if (container) {
       container.scrollBy({ left: -600, behavior: 'smooth' });
     }
   }
-  
+
   scrollSliderRight(event: Event) {
-    const button = event.target as HTMLElement;
+    const button = event.currentTarget as HTMLElement;
     const sliderRow = button.closest('.slider-row') as HTMLElement;
     const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
     if (container) {
@@ -353,17 +508,84 @@ export class MovieSearchComponent implements OnDestroy {
     this.selectedListIds = [];
     this.newListTitle = '';
   }
-  
+
   // Helper methods for template to access extended properties
   getMediaType(movie: Movie): 'movie' | 'tv' {
     return (movie as any).media_type || 'movie';
   }
-  
+
   getTitle(movie: Movie): string {
     return movie.title || (movie as any).name || '';
   }
-  
+
   getReleaseDate(movie: Movie): string {
     return movie.release_date || (movie as any).first_air_date || '';
+  }
+
+  // Hover connection methods
+  private hoveredSliderTrack: HTMLElement | null = null;
+
+  onMouseEnter(movie: Movie, event: MouseEvent) {
+    // Cancel any pending close
+    clearTimeout(this.hoverTimeout);
+
+    // If already showing this movie, don't restart
+    if (this.hoveredMovie?.id === movie.id) return;
+
+    // Capture rect and slider track synchronously before the timeout
+    const target = event.currentTarget as HTMLElement;
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    const capturedPosition = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width
+    };
+
+    // Find the slider track to pause it
+    const sliderTrack = target.closest('.slider-track') as HTMLElement;
+
+    // Delay before showing to avoid flash on quick mouse movements
+    this.hoverTimeout = setTimeout(() => {
+      // Pause the slider
+      if (sliderTrack) {
+        sliderTrack.classList.add('paused');
+        this.hoveredSliderTrack = sliderTrack;
+      }
+
+      this.hoverCardPosition = capturedPosition;
+      this.containerWidth = window.innerWidth;
+      this.hoveredMovie = movie;
+    }, 350);
+  }
+
+  onMouseLeave() {
+    // Cancel any pending open
+    clearTimeout(this.hoverTimeout);
+
+    // Delay before closing to allow mouse to move to hover card
+    this.hoverTimeout = setTimeout(() => {
+      this.closeHoverAndResumeSlider();
+    }, 150);
+  }
+
+  // Called when mouse enters the hover card itself - cancels any pending close
+  keepHoverOpen() {
+    clearTimeout(this.hoverTimeout);
+  }
+
+  // Called when mouse leaves the hover card
+  closeHover() {
+    this.closeHoverAndResumeSlider();
+  }
+
+  private closeHoverAndResumeSlider() {
+    this.hoveredMovie = null;
+    // Resume the slider
+    if (this.hoveredSliderTrack) {
+      this.hoveredSliderTrack.classList.remove('paused');
+      this.hoveredSliderTrack = null;
+    }
   }
 }

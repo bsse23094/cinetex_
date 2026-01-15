@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy  } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
@@ -19,20 +19,20 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoIframe') videoIframe!: ElementRef<HTMLIFrameElement>;
-  
+
   movieId: string | null = null;
   mediaType: string = 'movie'; // 'movie' or 'tv'
   season: number = 1;
   episode: number = 1;
   trustedVideoUrl: SafeResourceUrl | null = null;
-  
+
   // Movie/Show details
   mediaDetails: any = null;
   loading = true;
-  
+
   // View toggle for TV shows
   showDetails = true; // Default to showing details
-  
+
   // Skip intro / credits features
   showNextEpisode = false;
   creditsStart = 0; // will be calculated based on runtime
@@ -41,14 +41,14 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   nextEpisodeCountdown = 10; // seconds before auto-play
   countdownInterval: any = null;
   videoProgressInterval: any = null;
-  
+
   // Season/Episode info
   totalSeasons = 0;
   totalEpisodesInSeason = 0;
   seasonDetails: any = null;
   allSeasons: number[] = [];
   loadingEpisodes = false;
-  
+
   // Watch progress tracking
   showContinueWatching = false;
   savedProgress: any = null;
@@ -63,6 +63,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedListIds: string[] = [];
   newListTitle = '';
   showNewListForm = false;
+  showSeasonDropdown = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -70,7 +71,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private movieService: MovieService,
     private storage: StorageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Combine both paramMap and queryParamMap to ensure we have all data before loading
@@ -82,15 +83,15 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mediaType = queryParams.get('type') || 'movie';
       this.season = parseInt(queryParams.get('season') || '1', 10);
       this.episode = parseInt(queryParams.get('episode') || '1', 10);
-      
+
       // Check for saved progress
       this.checkSavedProgress();
-      
+
       this.setVideoUrl();
       this.loadMediaDetails();
     });
   }
-  
+
   ngAfterViewInit(): void {
     // Start monitoring video progress
     this.startVideoMonitoring();
@@ -99,7 +100,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // Listen for messages from iframe (if embed supports postMessage)
     window.addEventListener('message', this.handleIframeMessage.bind(this));
   }
-  
+
   ngOnDestroy(): void {
     // Clean up intervals
     if (this.countdownInterval) {
@@ -116,23 +117,23 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     // Save progress one last time before leaving
     this.saveProgress();
   }
-  
+
   getProgressKey(): string {
     return `cinetex_progress_${this.mediaType}_${this.movieId}`;
   }
-  
+
   checkSavedProgress(): void {
     const progressKey = this.getProgressKey();
     const saved = localStorage.getItem(progressKey);
-    
+
     if (saved) {
       try {
         this.savedProgress = JSON.parse(saved);
-        
+
         // Check if saved progress is for a different episode/season
         if (this.mediaType === 'tv') {
-          if (this.savedProgress.season !== this.season || 
-              this.savedProgress.episode !== this.episode) {
+          if (this.savedProgress.season !== this.season ||
+            this.savedProgress.episode !== this.episode) {
             this.showContinueWatching = true;
           }
         } else {
@@ -146,16 +147,16 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-  
+
   continueWatching(): void {
     if (!this.savedProgress) return;
-    
+
     if (this.mediaType === 'tv') {
       // Navigate to saved episode
       this.season = this.savedProgress.season;
       this.episode = this.savedProgress.episode;
       this.videoCurrentTime = this.savedProgress.progress || 0;
-      
+
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: {
@@ -165,26 +166,26 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         queryParamsHandling: 'merge'
       });
-      
+
       this.setVideoUrl();
     } else {
       // For movies, just update the current time
       this.videoCurrentTime = this.savedProgress.progress || 0;
     }
-    
+
     this.showContinueWatching = false;
   }
-  
+
   startFromBeginning(): void {
     this.videoCurrentTime = 0;
     this.showContinueWatching = false;
     // Clear saved progress
     localStorage.removeItem(this.getProgressKey());
   }
-  
+
   saveProgress(): void {
     if (!this.movieId) return;
-    
+
     const progressData: any = {
       mediaType: this.mediaType,
       movieId: this.movieId,
@@ -193,34 +194,34 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       timestamp: Date.now(),
       title: this.mediaDetails?.title || this.mediaDetails?.name || 'Unknown'
     };
-    
+
     if (this.mediaType === 'tv') {
       progressData.season = this.season;
       progressData.episode = this.episode;
       progressData.seasonName = `S${this.season}:E${this.episode}`;
     }
-    
+
     // Only save if there's meaningful progress (more than 30 seconds)
     // and not at the very end (last 2 minutes)
-    if (this.videoCurrentTime > 30 && 
-        (this.videoDuration === 0 || this.videoCurrentTime < this.videoDuration - 120)) {
+    if (this.videoCurrentTime > 30 &&
+      (this.videoDuration === 0 || this.videoCurrentTime < this.videoDuration - 120)) {
       const progressKey = this.getProgressKey();
       localStorage.setItem(progressKey, JSON.stringify(progressData));
     }
-    
+
     // If user finished watching (last 2 minutes), clear progress
     if (this.videoDuration > 0 && this.videoCurrentTime >= this.videoDuration - 120) {
       localStorage.removeItem(this.getProgressKey());
     }
   }
-  
+
   startProgressAutoSave(): void {
     // Auto-save progress every 30 seconds
     this.progressSaveInterval = setInterval(() => {
       this.saveProgress();
     }, 30000);
   }
-  
+
   handleIframeMessage(event: MessageEvent): void {
     // Handle postMessage from iframe if available
     if (event.data && typeof event.data === 'object') {
@@ -230,7 +231,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-  
+
   startVideoMonitoring(): void {
     // For TV shows, show next episode prompt after estimated duration
     if (this.mediaType === 'tv') {
@@ -243,44 +244,44 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }, 2400000); // 40 minutes in milliseconds
     }
   }
-  
+
   checkVideoProgress(): void {
     // This method is now handled by time-based estimates
     // since we can't access iframe internals
   }
-  
+
   hasNextEpisode(): boolean {
     if (this.mediaType !== 'tv' || !this.mediaDetails) return false;
-    
+
     // Check if there's a next episode in current season
     if (this.episode < this.totalEpisodesInSeason) return true;
-    
+
     // Check if there's a next season
     if (this.season < this.totalSeasons) return true;
-    
+
     return false;
   }
-  
+
   hasPreviousEpisode(): boolean {
     if (this.mediaType !== 'tv' || !this.mediaDetails) return false;
-    
+
     // Check if there's a previous episode in current season
     if (this.episode > 1) return true;
-    
+
     // Check if there's a previous season
     if (this.season > 1) return true;
-    
+
     return false;
   }
-  
+
   playPreviousEpisode(): void {
     if (!this.hasPreviousEpisode()) return;
-    
+
     // Reset states
     this.showNextEpisode = false;
     this.videoCurrentTime = 0;
     this.videoDuration = 0;
-    
+
     if (this.episode > 1) {
       // Previous episode in same season
       this.episode--;
@@ -288,7 +289,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       // Last episode of previous season
       this.season--;
       this.loadSeasonDetails(this.season);
-      
+
       // We need to wait for season details to load to get the last episode number
       setTimeout(() => {
         this.episode = this.totalEpisodesInSeason;
@@ -297,11 +298,11 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }, 500);
       return; // Exit early, we'll update URL after season loads
     }
-    
+
     this.setVideoUrl();
     this.updateUrlParams();
   }
-  
+
   updateUrlParams(): void {
     // Update URL
     this.router.navigate([], {
@@ -314,24 +315,24 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       queryParamsHandling: 'merge'
     });
   }
-  
+
   startNextEpisodeCountdown(): void {
     this.nextEpisodeCountdown = 10;
-    
+
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
     }
-    
+
     this.countdownInterval = setInterval(() => {
       this.nextEpisodeCountdown--;
-      
+
       if (this.nextEpisodeCountdown <= 0) {
         clearInterval(this.countdownInterval);
         this.playNextEpisode();
       }
     }, 1000);
   }
-  
+
   cancelNextEpisode(): void {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
@@ -341,15 +342,15 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.showNextEpisode = false;
   }
-  
+
   playNextEpisode(): void {
     if (!this.hasNextEpisode()) return;
-    
+
     // Reset states
     this.showNextEpisode = false;
     this.videoCurrentTime = 0;
     this.videoDuration = 0;
-    
+
     if (this.episode < this.totalEpisodesInSeason) {
       // Next episode in same season
       this.episode++;
@@ -359,19 +360,19 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.episode = 1;
       this.loadSeasonDetails(this.season);
     }
-    
+
     this.setVideoUrl();
     this.updateUrlParams();
   }
 
   loadMediaDetails() {
     if (!this.movieId) return;
-    
+
     this.loading = true;
     const id = parseInt(this.movieId, 10);
-    
+
     console.log('Loading media details:', { id, mediaType: this.mediaType });
-    
+
     if (this.mediaType === 'tv') {
       this.movieService.getTvDetails(id).subscribe({
         next: (data: any) => {
@@ -380,17 +381,17 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.totalSeasons = data.number_of_seasons || 0;
           this.allSeasons = Array.from({ length: this.totalSeasons }, (_, i) => i + 1);
           this.loading = false;
-          
+
           // Set backdrop image as CSS variable
           this.setBackdropImage(data.backdrop_path);
-          
+
           // Load current season details to get episode count
           this.loadSeasonDetails(this.season);
-          
+
           // Set video duration estimate (typical TV episode ~45 min)
           this.videoDuration = 2700; // 45 minutes in seconds
           this.creditsStart = this.videoDuration - 120; // Last 2 minutes
-          
+
           // Check favorite status
           this.checkFavoriteStatus();
         },
@@ -405,16 +406,16 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Movie details loaded:', data);
           this.mediaDetails = data;
           this.loading = false;
-          
+
           // Set backdrop image as CSS variable
           this.setBackdropImage(data.backdrop_path);
-          
+
           // Set video duration for movies
           if (data.runtime) {
             this.videoDuration = data.runtime * 60; // Convert minutes to seconds
             this.creditsStart = this.videoDuration - 300; // Last 5 minutes
           }
-          
+
           // Check favorite status
           this.checkFavoriteStatus();
         },
@@ -425,10 +426,10 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
   }
-  
+
   loadSeasonDetails(seasonNumber: number): void {
     if (!this.movieId) return;
-    
+
     this.loadingEpisodes = true;
     const id = parseInt(this.movieId, 10);
     this.movieService.getTvSeasonDetails(id, seasonNumber).subscribe({
@@ -444,13 +445,13 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-  
+
   onSeasonChange(newSeason: number): void {
     this.season = newSeason;
     this.episode = 1;
     this.loadSeasonDetails(newSeason);
     this.setVideoUrl();
-    
+
     // Update URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -462,13 +463,13 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       queryParamsHandling: 'merge'
     });
   }
-  
+
   selectEpisode(episodeNumber: number): void {
     this.episode = episodeNumber;
     this.videoCurrentTime = 0;
     this.videoDuration = 2700; // Reset duration
     this.setVideoUrl();
-    
+
     // Update URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -479,23 +480,23 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       queryParamsHandling: 'merge'
     });
-    
+
     // Scroll to top to show player
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  
+
   getEpisodeThumbnail(episode: any): string {
     if (episode.still_path) {
       return `https://image.tmdb.org/t/p/w300${episode.still_path}`;
     }
     return 'assets/no-image.jpg'; // Fallback image
   }
-  
+
   getPosterUrl(path: string): string {
     if (!path) return 'assets/no-image.jpg';
     return `https://image.tmdb.org/t/p/w500${path}`;
   }
-  
+
   playEpisode(episodeNumber: number): void {
     this.selectEpisode(episodeNumber);
   }
@@ -512,13 +513,13 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     let url = '';
-    
+
     // vidsrc-embed.ru uses tmdb id format
     // For movies: https://vidsrc-embed.ru/embed/movie/{tmdb_id}
     // For TV shows (series): https://vidsrc-embed.ru/embed/tv/{tmdb_id}
     // For TV episodes: https://vidsrc-embed.ru/embed/tv/{tmdb_id}/{season}-{episode}
     // For anime: Use alternative embed with gogoanime
-    
+
     if (this.mediaType === 'anime') {
       // For anime, try to use gogoanime embed or fallback
       const animeTitle = this.mediaDetails?.title || this.mediaDetails?.name || '';
@@ -531,7 +532,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       // Movie
       url = `${environment.embedBaseUrl}/embed/movie/${this.movieId}`;
     }
-    
+
     this.trustedVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
@@ -544,7 +545,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .map((c: any) => c.name)
       .join(', ');
   }
-  
+
   setBackdropImage(backdropPath: string | null): void {
     if (backdropPath) {
       const backdropUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
@@ -560,7 +561,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       const user = this.storage.getCurrentUser();
       const numericId = parseInt(this.movieId, 10);
       this.isFavorite = user.favoriteMovieIds.includes(numericId);
-      
+
       // Check rating
       const ratings = this.storage.get<{ [key: number]: number }>('ratings') || {};
       this.userRating = ratings[numericId] || 0;
@@ -569,7 +570,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFavorite(): void {
     if (!this.mediaDetails) return;
-    
+
     const movieObj = {
       id: parseInt(this.movieId!, 10),
       title: this.mediaDetails.title || this.mediaDetails.name,
@@ -601,12 +602,12 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   onRatingChange(rating: number): void {
     this.userRating = rating;
     const numericId = parseInt(this.movieId!, 10);
-    
+
     // Save rating using storage service
     const ratings = this.storage.get<{ [key: number]: number }>('ratings') || {};
     ratings[numericId] = rating;
     this.storage.set('ratings', ratings);
-    
+
     // Save movie object to storage so it appears in rated movies
     const movieObj = {
       id: numericId,
@@ -618,13 +619,13 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       overview: this.mediaDetails.overview,
       media_type: this.mediaType
     };
-    
+
     const movies = this.storage.getMovies();
     if (!movies.some((m: any) => m.id === numericId)) {
       movies.push(movieObj);
       this.storage.set('movies', movies);
     }
-    
+
     // Close modal after rating
     setTimeout(() => {
       this.closeRatingModal();
@@ -709,11 +710,11 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   formatTime(seconds: number): string {
     if (!seconds || seconds === 0) return '0:00';
-    
+
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    
+
     if (hrs > 0) {
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }

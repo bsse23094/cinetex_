@@ -1,3 +1,6 @@
+<!-- Skeleton Hero when loading -->
+<div class="hero-section skeleton skeleton-hero" *ngIf="!query && !featuredMovie && loading"></div>
+
 <div class="hero-section" *ngIf="!query && featuredMovie">
   <div class="hero-bg">
     <img [src]="featuredMovie.poster_path | posterUrl: 'original'" alt="Background">
@@ -26,8 +29,20 @@
   </div>
 </div>
 
+<!-- Skeleton Sliders when loading -->
+<div class="content-rows" *ngIf="!query && loading">
+  <div class="skeleton skeleton-slider-title"></div>
+  <div class="skeleton-slider">
+    <div class="skeleton skeleton-backdrop" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+  <div class="skeleton skeleton-slider-title"></div>
+  <div class="skeleton-slider">
+    <div class="skeleton skeleton-backdrop" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+</div>
+
 <!-- 3 Netflix-Style Auto-Scrolling Sliders -->
-<div class="content-rows" *ngIf="!query">
+<div class="content-rows" *ngIf="!query && !loading">
   <!-- Slider 1: Trending Movies -->
   <div class="slider-row" *ngIf="recommendedMovies.length">
     <div class="row-header-with-nav">
@@ -41,11 +56,16 @@
         </button>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
     <div class="slider-container">
-      <div class="slider-track auto-scroll" (mouseenter)="pauseScroll($event)" (mouseleave)="resumeScroll($event)">
-        <div class="movie-card" *ngFor="let movie of recommendedMovies.concat(recommendedMovies)" (click)="watchMedia(movie)">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let movie of recommendedMovies" (click)="watchMedia(movie)"
+          (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
           <div class="poster-container">
-            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title" [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
+            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title"
+              [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
             <div class="card-overlay">
               <div class="play-btn-small"><i class="fas fa-play"></i></div>
             </div>
@@ -60,6 +80,9 @@
         </div>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 
   <!-- Slider 2: Popular TV Shows -->
@@ -75,11 +98,16 @@
         </button>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
     <div class="slider-container">
-      <div class="slider-track auto-scroll-fast" (mouseenter)="pauseScroll($event)" (mouseleave)="resumeScroll($event)">
-        <div class="movie-card" *ngFor="let show of recommendedShows.concat(recommendedShows)" (click)="watchMedia(show)">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let show of recommendedShows" (click)="watchMedia(show)"
+          (mouseenter)="onMouseEnter(show, $event)" (mouseleave)="onMouseLeave()">
           <div class="poster-container">
-            <img [src]="show.backdrop_path | backdropUrl" [alt]="show.title" [style.object-fit]="show.backdrop_path ? 'cover' : 'contain'">
+            <img [src]="show.backdrop_path | backdropUrl" [alt]="show.title"
+              [style.object-fit]="show.backdrop_path ? 'cover' : 'contain'">
             <div class="card-overlay">
               <div class="play-btn-small"><i class="fas fa-play"></i></div>
             </div>
@@ -94,6 +122,9 @@
         </div>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 
   <!-- Slider 3: Top Anime -->
@@ -109,11 +140,16 @@
         </button>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
     <div class="slider-container">
-      <div class="slider-track auto-scroll-slow" (mouseenter)="pauseScroll($event)" (mouseleave)="resumeScroll($event)">
-        <div class="movie-card" *ngFor="let anime of recommendedAnime.concat(recommendedAnime)" (click)="watchMedia(anime)">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let anime of recommendedAnime" (click)="watchMedia(anime)"
+          (mouseenter)="onMouseEnter(anime, $event)" (mouseleave)="onMouseLeave()">
           <div class="poster-container">
-            <img [src]="anime.backdrop_path | backdropUrl" [alt]="anime.title" [style.object-fit]="anime.backdrop_path ? 'cover' : 'contain'">
+            <img [src]="anime.backdrop_path | backdropUrl" [alt]="anime.title"
+              [style.object-fit]="anime.backdrop_path ? 'cover' : 'contain'">
             <div class="card-overlay">
               <div class="play-btn-small"><i class="fas fa-play"></i></div>
             </div>
@@ -128,43 +164,207 @@
         </div>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
-</div>
 
-<!-- Search Results -->
-<div class="search-results-page" *ngIf="query">
-  <div class="results-header">
-    <div class="header-content">
-      <div class="header-icon">
-        <i class="fas fa-search"></i>
-      </div>
-      <div class="header-text">
-        <h1 class="results-title">search results for "{{ query }}"</h1>
-        <p class="results-count">
-          <span class="count-number">{{ results.length }}</span> 
-          {{ results.length === 1 ? 'result' : 'results' }} found
-        </p>
+  <!-- Slider 4: Action Movies -->
+  <div class="slider-row" *ngIf="actionMovies.length">
+    <div class="row-header-with-nav">
+      <h2 class="row-title">action & adventure</h2>
+      <div class="slider-nav-arrows">
+        <button class="nav-arrow prev" (click)="scrollSliderLeft($event)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-arrow next" (click)="scrollSliderRight($event)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
-  </div>
-  
-  <div class="results-grid" *ngIf="results.length">
-    <div class="result-card" *ngFor="let movie of results" (click)="watchMedia(movie)">
-      <div class="result-poster">
-        <img [src]="movie.poster_path | posterUrl" [alt]="movie.title">
-        <div class="poster-gradient"></div>
-        <div class="result-content">
-          <h3 class="result-title">{{ getTitle(movie) }}</h3>
-          <div class="result-meta">
-            <span>{{ getReleaseDate(movie) | date:'yyyy' }}</span>
-            <span>•</span>
-            <span><i class="fas fa-star"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="slider-container">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let movie of actionMovies" (click)="watchMedia(movie)"
+          (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+          <div class="poster-container">
+            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title"
+              [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
+            <div class="card-overlay">
+              <div class="play-btn-small"><i class="fas fa-play"></i></div>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ movie.title }}</div>
+            <div class="card-meta">
+              <span>{{ movie.release_date | date:'yyyy' }}</span>
+              <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
-  
+
+  <!-- Slider 5: Top Rated -->
+  <div class="slider-row" *ngIf="topRatedMovies.length">
+    <div class="row-header-with-nav">
+      <h2 class="row-title">top rated of all time</h2>
+      <div class="slider-nav-arrows">
+        <button class="nav-arrow prev" (click)="scrollSliderLeft($event)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-arrow next" (click)="scrollSliderRight($event)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="slider-container">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let movie of topRatedMovies" (click)="watchMedia(movie)"
+          (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+          <div class="poster-container">
+            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title"
+              [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
+            <div class="card-overlay">
+              <div class="play-btn-small"><i class="fas fa-play"></i></div>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ movie.title }}</div>
+            <div class="card-meta">
+              <span>{{ movie.release_date | date:'yyyy' }}</span>
+              <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Slider 6: Now Playing -->
+  <div class="slider-row" *ngIf="nowPlayingMovies.length">
+    <div class="row-header-with-nav">
+      <h2 class="row-title">now in theaters</h2>
+      <div class="slider-nav-arrows">
+        <button class="nav-arrow prev" (click)="scrollSliderLeft($event)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-arrow next" (click)="scrollSliderRight($event)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="slider-container">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let movie of nowPlayingMovies" (click)="watchMedia(movie)"
+          (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+          <div class="poster-container">
+            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title"
+              [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
+            <div class="card-overlay">
+              <div class="play-btn-small"><i class="fas fa-play"></i></div>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ movie.title }}</div>
+            <div class="card-meta">
+              <span>{{ movie.release_date | date:'yyyy' }}</span>
+              <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Slider 7: Thriller Movies -->
+  <div class="slider-row" *ngIf="thrillerMovies.length">
+    <div class="row-header-with-nav">
+      <h2 class="row-title">edge of your seat thrillers</h2>
+      <div class="slider-nav-arrows">
+        <button class="nav-arrow prev" (click)="scrollSliderLeft($event)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-arrow next" (click)="scrollSliderRight($event)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="slider-container">
+      <div class="slider-track">
+        <div class="movie-card" *ngFor="let movie of thrillerMovies" (click)="watchMedia(movie)"
+          (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+          <div class="poster-container">
+            <img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title"
+              [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'">
+            <div class="card-overlay">
+              <div class="play-btn-small"><i class="fas fa-play"></i></div>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">{{ movie.title }}</div>
+            <div class="card-meta">
+              <span>{{ movie.release_date | date:'yyyy' }}</span>
+              <span><i class="fas fa-star text-accent"></i> {{ movie.vote_average | number:'1.1-1' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Search Results - Netflix Style Compact Grid -->
+<div class="search-results-page" *ngIf="query">
+  <div class="results-header-compact">
+    <span class="explore-label">Filter by:</span>
+    <div class="explore-tags">
+      <button class="explore-tag" [class.active]="activeFilter === 'all'" (click)="filterResults('all')">All</button>
+      <button class="explore-tag" [class.active]="activeFilter === 'movie'"
+        (click)="filterResults('movie')">Movies</button>
+      <button class="explore-tag" [class.active]="activeFilter === 'tv'" (click)="filterResults('tv')">TV Shows</button>
+      <button class="explore-tag" [class.active]="activeFilter === 'action'" (click)="filterByGenre(28)">Action</button>
+      <button class="explore-tag" [class.active]="activeFilter === 'comedy'" (click)="filterByGenre(35)">Comedy</button>
+      <button class="explore-tag" [class.active]="activeFilter === 'drama'" (click)="filterByGenre(18)">Drama</button>
+    </div>
+  </div>
+
+  <div class="compact-results-grid" *ngIf="results.length">
+    <div class="compact-card" *ngFor="let movie of results" (click)="watchMedia(movie)"
+      (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+      <img [src]="movie.backdrop_path | backdropUrl" [alt]="getTitle(movie)"
+        [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'"
+        onerror="this.src='assets/placeholder-backdrop.png'">
+      <div class="compact-card-overlay">
+        <div class="compact-card-title">{{ getTitle(movie) }}</div>
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="results.length === 0 && !loading" class="empty-results">
     <div class="empty-icon">
       <i class="fas fa-search"></i>
@@ -179,10 +379,12 @@
 </div>
 
 <!-- Add to List Modal -->
-<div *ngIf="showListPrompt" class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;">
-  <div class="modal-content" style="background:var(--bg-card-secondary);padding:2rem;border-radius:var(--radius-lg);width:90%;max-width:400px;border:1px solid var(--border-subtle);">
+<div *ngIf="showListPrompt" class="modal-overlay"
+  style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;">
+  <div class="modal-content"
+    style="background:var(--bg-card-secondary);padding:2rem;border-radius:var(--radius-lg);width:90%;max-width:400px;border:1px solid var(--border-subtle);">
     <h3 style="margin-bottom:1rem;">Add to List</h3>
-    
+
     <div *ngIf="userLists.length" style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.5rem;">
       <label *ngFor="let list of userLists" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
         <input type="checkbox" [value]="list.id" [(ngModel)]="selectedListIds">
@@ -191,14 +393,21 @@
     </div>
 
     <div style="margin-bottom:1rem;">
-      <input [(ngModel)]="newListTitle" placeholder="New List Title" style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.1); border:none; border-radius:var(--radius-sm); color:white;">
+      <input [(ngModel)]="newListTitle" placeholder="New List Title"
+        style="width:100%; padding:0.8rem; background:rgba(255,255,255,0.1); border:none; border-radius:var(--radius-sm); color:white;">
     </div>
 
     <div style="display:flex; gap:1rem;">
       <button class="btn-primary" (click)="userLists.length && !newListTitle ? confirmAddToList() : addNewListInline()">
         {{ newListTitle ? 'Create & Add' : 'Add to Selected' }}
       </button>
-      <button class="btn-secondary" style="border-radius:8px; width:auto; padding:0 1rem;" (click)="cancelAddToList()">Cancel</button>
+      <button class="btn-secondary" style="border-radius:8px; width:auto; padding:0 1rem;"
+        (click)="cancelAddToList()">Cancel</button>
     </div>
   </div>
 </div>
+<!-- Hover Card Overlay -->
+<app-movie-hover-card *ngIf="hoveredMovie" [movie]="hoveredMovie" [position]="hoverCardPosition"
+  [containerWidth]="containerWidth" (mouseenter)="keepHoverOpen()" (mouseleave)="closeHover()" (close)="closeHover()"
+  (play)="watchMedia(hoveredMovie!)" (addToList)="addToListPrompt(hoveredMovie!)" (rate)="rateMovie(hoveredMovie!)">
+</app-movie-hover-card>

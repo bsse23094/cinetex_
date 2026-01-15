@@ -1,0 +1,47 @@
+<div class="hover-card-container" [style.top.px]="adjustedTop" [style.left.px]="adjustedLeft"
+  [class.visible]="isVisible" [style.transform-origin]="scaleOrigin" (mouseenter)="$event.stopPropagation()"
+  (mouseleave)="close.emit()">
+
+  <div class="media-area">
+    <img [src]="movie.backdrop_path | backdropUrl" [alt]="title">
+    <div class="media-overlay"></div>
+  </div>
+
+  <div class="content-area">
+    <div class="action-bar">
+      <div class="left-actions">
+        <button class="action-btn play-primary" (click)="play.emit(); $event.stopPropagation()">
+          <i class="fas fa-play"></i>
+        </button>
+        <button class="action-btn circle-btn" (click)="addToList.emit(); $event.stopPropagation()"
+          title="Add to My List">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="action-btn circle-btn" (click)="rate.emit(); $event.stopPropagation()" title="I like this">
+          <i class="far fa-thumbs-up"></i>
+        </button>
+      </div>
+      <div class="right-actions">
+        <button class="action-btn circle-btn" (click)="play.emit(); $event.stopPropagation()" title="More Info">
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="movie-title">{{ title }}</div>
+
+    <div class="meta-info">
+      <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% Match</span>
+      <span class="age-rating" *ngIf="ageRating">{{ ageRating }}</span>
+      <span class="duration" *ngIf="formattedRuntime">{{ formattedRuntime }}</span>
+      <span class="quality-badge">{{ qualityBadge }}</span>
+    </div>
+
+    <div class="genres" *ngIf="genres.length > 0">
+      <ng-container *ngFor="let genre of genres; let last = last">
+        <span>{{ genre }}</span>
+        <span class="separator" *ngIf="!last">•</span>
+      </ng-container>
+    </div>
+  </div>
+</div>
