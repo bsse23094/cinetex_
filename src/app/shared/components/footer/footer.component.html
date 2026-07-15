@@ -1,54 +1,42 @@
 <footer class="app-footer">
+  <section class="footer-cta">
+    <div>
+      <span class="footer-cta-kicker">Your next screening starts here</span>
+      <h2>Make tonight <em>count.</em></h2>
+    </div>
+    <a routerLink="/search" class="footer-cta-link">Explore the archive <i class="fas fa-arrow-right"></i></a>
+  </section>
+
   <div class="footer-container">
     <div class="footer-grid">
-      <!-- Brand Section -->
       <div class="footer-section footer-brand">
-        <div class="brand-header">
-          <i class="fas fa-film brand-icon"></i>
-          <span class="footer-logo">cinetex</span>
-        </div>
-        <p class="footer-tagline">Your premium streaming companion for movies, TV shows, and anime. Discover, watch, and
-          enjoy unlimited entertainment by Ahmed Ayyan Mukhtar.</p>
-        <!-- <div class="footer-social">
-          <a href="https://github.com/bsse23094/cinetex_" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub">
-            <i class="fab fa-github"></i>
-          </a>
-          
-        </div> -->
+        <div class="brand-header"><span class="brand-mark">C</span><span class="footer-logo">cinetex</span></div>
+        <p class="footer-tagline">A considered place for films, series, and anime worth spending time with.</p>
+        <span class="footer-system">Personal film index / always on</span>
       </div>
 
-      <!-- Quick Links -->
       <div class="footer-section">
-        <h3 class="footer-heading">
-          <i class="fas fa-link"></i>
-          Quick Links
-        </h3>
+        <h3 class="footer-heading">Navigate</h3>
         <ul class="footer-list">
-          <li><a routerLink="/" class="footer-link"><i class="fas fa-home"></i> Home</a></li>
-          <li><a routerLink="/library" class="footer-link"><i class="fas fa-th"></i> Library</a></li>
-          <li><a routerLink="/favorites" class="footer-link"><i class="fas fa-heart"></i> Favorites</a></li>
-          <li><a routerLink="/lists" class="footer-link"><i class="fas fa-list"></i> My Lists</a></li>
-          <li><a routerLink="/rated" class="footer-link"><i class="fas fa-star"></i> Rated Movies</a></li>
+          <li><a routerLink="/search" class="footer-link"><span>01</span> Discover</a></li>
+          <li><a routerLink="/lists" class="footer-link"><span>02</span> My library</a></li>
+          <li><a routerLink="/favorites" class="footer-link"><span>03</span> Favorites</a></li>
+          <li><a routerLink="/rated" class="footer-link"><span>04</span> Rated titles</a></li>
         </ul>
+      </div>
+
+      <div class="footer-section footer-index">
+        <span class="footer-index-number">∞</span>
+        <p>Keep the good ones close.</p>
       </div>
     </div>
 
-    <!-- Footer Bottom -->
     <div class="footer-bottom">
       <div class="footer-divider"></div>
       <div class="footer-bottom-content">
-        <div class="footer-copyright">
-          <i class="fas fa-copyright"></i>
-          <span>{{ currentYear }} Cinetex. All rights reserved.</span>
-        </div>
-        <div class="footer-badges">
-          <span class="badge"><i class="fas fa-lock"></i> Secure</span>
-          <span class="badge"><i class="fas fa-bolt"></i> Fast</span>
-          <span class="badge"><i class="fas fa-check-circle"></i> Trusted</span>
-        </div>
-        <div class="footer-meta">
-          <span>Built with Angular</span>
-        </div>
+        <div class="footer-copyright"><span>© {{ currentYear }} Cinetex</span></div>
+        <div class="footer-badges"><span class="badge"><i class="fas fa-circle"></i> Streaming now</span><span class="badge">Built with Angular</span></div>
+        <div class="footer-meta"><a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a></div>
       </div>
     </div>
   </div>

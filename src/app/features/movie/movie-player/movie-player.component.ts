@@ -19,6 +19,7 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoIframe') videoIframe!: ElementRef<HTMLIFrameElement>;
+  @ViewChild('episodesGrid') episodesGrid?: ElementRef<HTMLDivElement>;
 
   movieId: string | null = null;
   mediaType: string = 'movie'; // 'movie' or 'tv'
@@ -72,6 +73,27 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private movieService: MovieService,
     private storage: StorageService
   ) { }
+
+  scrollEpisodes(direction: -1 | 1): void {
+    const episodeGrid = this.episodesGrid?.nativeElement;
+    if (!episodeGrid) return;
+    episodeGrid.scrollBy({
+      left: direction * Math.max(episodeGrid.clientWidth * 0.78, 340),
+      behavior: 'smooth'
+    });
+  }
+
+  onEpisodesWheel(event: WheelEvent): void {
+    const episodeGrid = this.episodesGrid?.nativeElement;
+    if (!episodeGrid || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
+
+    const canScrollLeft = event.deltaY < 0 && episodeGrid.scrollLeft > 0;
+    const canScrollRight = event.deltaY > 0 && episodeGrid.scrollLeft + episodeGrid.clientWidth < episodeGrid.scrollWidth - 1;
+    if (!canScrollLeft && !canScrollRight) return;
+
+    event.preventDefault();
+    episodeGrid.scrollLeft += event.deltaY;
+  }
 
   ngOnInit(): void {
     // Combine both paramMap and queryParamMap to ensure we have all data before loading

@@ -1,1 +1,37 @@
-/* Component styles defined in global styles.css */
+:host { display: block; }
+
+.profile-container {
+  width: min(760px, calc(100% - 3rem));
+  min-height: 58vh;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 6rem) 0;
+}
+
+.profile-kicker {
+  margin: 0 0 1rem;
+  color: #e50914;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.profile-header { display: flex; align-items: center; gap: 1.3rem; padding-bottom: 2.2rem; border-bottom: 1px solid rgba(245, 241, 233, .22); }
+.profile-avatar { display: grid; width: 88px; height: 88px; place-items: center; flex: 0 0 auto; background: #e50914; color: #fff; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 3rem; box-shadow: 7px 7px 0 #f5f1e9; }
+.profile-header h1, .profile-empty h1 { margin: 0; color: #f5f1e9; font-family: 'Bebas Neue', Impact, sans-serif; font-size: clamp(3rem, 8vw, 5.25rem); font-weight: 400; letter-spacing: .015em; line-height: .85; }
+.profile-header p { margin: .75rem 0 0; color: rgba(245, 241, 233, .68); font-family: 'IBM Plex Mono', monospace; font-size: .75rem; }
+.profile-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 2rem 0; background: rgba(245, 241, 233, .2); }
+.profile-summary div { display: grid; gap: .4rem; padding: 1.25rem; background: #111; }
+.profile-summary span { color: rgba(245, 241, 233, .52); font-family: 'IBM Plex Mono', monospace; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; }
+.profile-summary strong { color: #f5f1e9; font-size: .9rem; }
+.profile-signout { display: inline-flex; align-items: center; gap: .6rem; padding: .9rem 1.1rem; border: 0; background: #e50914; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; cursor: pointer; }
+.profile-signout:hover { background: #f5f1e9; color: #111; }
+.profile-empty { display: grid; align-content: center; gap: 1.4rem; }
+
+@media (max-width: 560px) {
+  .profile-container { width: min(100% - 2rem, 760px); padding: 3rem 0; }
+  .profile-header { align-items: flex-start; gap: 1rem; }
+  .profile-avatar { width: 62px; height: 62px; font-size: 2.2rem; box-shadow: 5px 5px 0 #f5f1e9; }
+  .profile-summary { grid-template-columns: 1fr; }
+}

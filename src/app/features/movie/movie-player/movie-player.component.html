@@ -102,14 +102,17 @@
   <!-- Episodes Section -->
   <div *ngIf="mediaType === 'tv' && !showDetails && mediaDetails" class="episodes-section">
     <div class="episodes-header">
-      <h2>Episodes</h2>
+      <div class="episodes-title-block">
+        <span class="section-kicker">Episode guide</span>
+        <h2>Choose the next chapter</h2>
+      </div>
       <div class="season-selector-wrapper">
-        <button class="season-dropdown-btn" (click)="showSeasonDropdown = !showSeasonDropdown">
+        <button type="button" class="season-dropdown-btn" (click)="showSeasonDropdown = !showSeasonDropdown" [attr.aria-expanded]="showSeasonDropdown">
           <span>Season {{ season }}</span>
           <i class="fas fa-chevron-down" [class.rotated]="showSeasonDropdown"></i>
         </button>
         <div class="season-dropdown" *ngIf="showSeasonDropdown">
-          <button *ngFor="let s of allSeasons" class="season-option" [class.active]="s === season"
+          <button type="button" *ngFor="let s of allSeasons" class="season-option" [class.active]="s === season"
             (click)="onSeasonChange(s); showSeasonDropdown = false">
             Season {{ s }}
             <i *ngIf="s === season" class="fas fa-check"></i>
@@ -118,7 +121,15 @@
       </div>
     </div>
 
-    <div class="episodes-grid" *ngIf="seasonDetails && !loadingEpisodes">
+    <div class="episode-scroll-actions" *ngIf="seasonDetails && !loadingEpisodes">
+      <span><i class="fas fa-arrows-left-right"></i> Browse episodes</span>
+      <div>
+        <button type="button" (click)="scrollEpisodes(-1)" aria-controls="episodes-grid" aria-label="Show previous episodes"><i class="fas fa-arrow-left"></i></button>
+        <button type="button" (click)="scrollEpisodes(1)" aria-controls="episodes-grid" aria-label="Show more episodes"><i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div #episodesGrid id="episodes-grid" class="episodes-grid" *ngIf="seasonDetails && !loadingEpisodes" tabindex="0" aria-label="Episode list. Scroll horizontally to browse more episodes." (wheel)="onEpisodesWheel($event)">
       <div class="episode-card" *ngFor="let ep of seasonDetails.episodes" (click)="playEpisode(ep.episode_number)"
         [class.active]="ep.episode_number === episode" [class.current-playing]="ep.episode_number === episode">
         <div class="episode-thumbnail">

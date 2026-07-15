@@ -1,22 +1,22 @@
 .rating {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 2.5rem;
+  gap: .18rem;
+  font-size: 1.35rem;
 }
 
 .rating span {
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.2);
-  transition: all 0.2s ease;
+  color: rgba(245, 241, 233, .26);
+  transition: color .15s ease, transform .15s ease;
   user-select: none;
 }
 
 .rating span:hover {
-  transform: scale(1.15);
+  transform: translateY(-3px);
 }
 
 .rating span.filled {
-  color: #fbbf24;
-  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  color: #e50914;
+  text-shadow: 2px 2px 0 rgba(245,241,233,.28);
 }

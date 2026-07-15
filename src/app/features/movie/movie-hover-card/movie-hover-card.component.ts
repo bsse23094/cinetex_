@@ -73,10 +73,11 @@ export class MovieHoverCardComponent implements OnInit, AfterViewInit {
     }
 
     calculatePosition() {
-        const CARD_WIDTH = 380;
-        const CARD_HEIGHT = 340; // Approximate height
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
+        const padding = 16;
+        const CARD_WIDTH = Math.min(400, viewportWidth - padding * 2);
+        const CARD_HEIGHT = 375; // Approximate expanded card height
 
         // position.top and position.left are from getBoundingClientRect() 
         // which are already viewport-relative, no need to adjust for scroll
@@ -87,8 +88,6 @@ export class MovieHoverCardComponent implements OnInit, AfterViewInit {
         let targetLeft = itemCenterX - (CARD_WIDTH / 2);
 
         // Edge detection with padding
-        const padding = 16;
-
         if (targetLeft < padding) {
             targetLeft = padding;
             this.scaleOrigin = 'left top';
@@ -192,5 +191,15 @@ export class MovieHoverCardComponent implements OnInit, AfterViewInit {
     // Get movie title (handles both movies and TV shows)
     get title(): string {
         return this.movie.title || this.movie.name || '';
+    }
+
+    get releaseYear(): string {
+        const date = (this.movie as any).release_date || (this.movie as any).first_air_date;
+        return date ? new Date(date).getFullYear().toString() : 'ARCHIVE';
+    }
+
+    get mediaLabel(): string {
+        const movie = this.movie as any;
+        return movie.media_type === 'tv' || movie.first_air_date ? 'Series' : 'Feature film';
     }
 }

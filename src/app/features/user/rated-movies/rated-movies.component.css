@@ -249,3 +249,26 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
 }
+
+/* Editorial cinema treatment */
+.rated-page { max-width: 1540px; margin: 0 auto; padding: clamp(3.5rem, 7vw, 6.5rem) var(--gutter); }
+.page-header { margin-bottom: clamp(2.5rem, 5vw, 4.5rem); padding-bottom: 1.4rem; border-bottom: 3px solid #f5f1e9; }
+.page-header::before { display: block; width: 74px; height: 4px; margin-bottom: 1.2rem; background: #e50914; content: ''; }
+.header-content { gap: 1rem; }
+.header-icon { width: 54px; height: 54px; border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 5px 5px 0 #e50914; background: #e50914; color: #fff; font-size: 1.15rem; }
+.page-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3.1rem, 8vw, 7.4rem); font-weight: 700; letter-spacing: -.09em; line-height: .78; text-transform: uppercase; }
+.page-subtitle, .card-meta { color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.page-subtitle .count, .card-meta .tmdb-rating, .rating-stars i.filled, .rating-number { color: #e50914; }
+.rated-grid { gap: clamp(1rem, 2vw, 1.55rem); }
+.rated-card:hover { transform: translateY(-8px); }
+.card-poster { border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 5px 5px 0 #e50914; }
+.card-poster img { filter: grayscale(.35) contrast(1.05); transition: filter .2s ease, transform .25s ease; }
+.rated-card:hover .card-poster img { filter: grayscale(0); transform: scale(1.04); }
+.your-rating-badge { border: 2px solid #f5f1e9; border-radius: 0; background: #111; box-shadow: 3px 3px 0 #e50914; }
+.rating-stars i { color: rgba(229,9,20,.25); }
+.card-content { padding-top: .85rem; }
+.card-title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: -.045em; }
+.empty-icon { border: 2px solid #e50914; border-radius: 0; background: transparent; color: #e50914; }
+.browse-btn:hover { background: #f5f1e9; box-shadow: 5px 5px 0 #e50914; color: #111; transform: translate(5px,5px); }
+
+@media (max-width: 600px) { .rated-page { padding-top: 3rem; } .page-title { font-size: clamp(2.75rem, 15vw, 4.4rem); } }

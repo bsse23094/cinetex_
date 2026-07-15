@@ -1,18 +1,24 @@
 
-<div class="profile-container" *ngIf="user">
-	<div class="profile-header">
-		<img [src]="user.avatarUrl || ('https://ui-avatars.com/api/?name=' + user.name)" alt="Avatar" class="avatar" />
-		<div>
-			<h2>{{ user.name }}</h2>
-			<p>{{ user.email }}</p>
-			<span>Joined: {{ user.joined | date }}</span>
-		</div>
-	</div>
-		<div class="profile-bio" *ngIf="user.bio">
-			<h4>Bio</h4>
-			<p>{{ user.bio }}</p>
-	</div>
-</div>
-<div *ngIf="!user">
-	<p>User not found.</p>
-</div>
+<section class="profile-container" *ngIf="user; else signedOut" data-reveal>
+  <p class="profile-kicker">Your account</p>
+  <div class="profile-header">
+    <span class="profile-avatar" aria-hidden="true">{{ initial }}</span>
+    <div>
+      <h1>{{ displayName }}</h1>
+      <p>{{ user.email }}</p>
+    </div>
+  </div>
+  <div class="profile-summary">
+    <div><span>Personalization</span><strong>Active</strong></div>
+    <div><span>Watchlist</span><strong>Synced to this device</strong></div>
+  </div>
+  <button type="button" class="profile-signout" (click)="signOut()">Sign out <i class="fas fa-arrow-right"></i></button>
+</section>
+
+<ng-template #signedOut>
+  <section class="profile-container profile-empty" data-reveal>
+    <p class="profile-kicker">Your account</p>
+    <h1>Sign in to shape your next watch.</h1>
+    <a routerLink="/auth" class="profile-signout">Sign in <i class="fas fa-arrow-right"></i></a>
+  </section>
+</ng-template>

@@ -1,37 +1,40 @@
 <div class="hover-card-container" [style.top.px]="adjustedTop" [style.left.px]="adjustedLeft"
   [class.visible]="isVisible" [style.transform-origin]="scaleOrigin" (mouseenter)="$event.stopPropagation()"
-  (mouseleave)="close.emit()">
+  (mouseleave)="close.emit()" [attr.aria-label]="title + ' quick preview'">
 
   <div class="media-area">
     <img [src]="movie.backdrop_path | backdropUrl" [alt]="title">
     <div class="media-overlay"></div>
+    <div class="media-index"><span>cinetex / select</span><span>{{ releaseYear }}</span></div>
   </div>
 
   <div class="content-area">
     <div class="action-bar">
       <div class="left-actions">
-        <button class="action-btn play-primary" (click)="play.emit(); $event.stopPropagation()">
-          <i class="fas fa-play"></i>
+        <button class="action-btn play-primary" (click)="play.emit(); $event.stopPropagation()" [attr.aria-label]="'Play ' + title">
+          <i class="fas fa-play"></i><span>play</span>
         </button>
-        <button class="action-btn circle-btn" (click)="addToList.emit(); $event.stopPropagation()"
-          title="Add to My List">
+        <button class="action-btn circle-btn" (click)="addToList.emit(); $event.stopPropagation()" title="Add to My List" [attr.aria-label]="'Add ' + title + ' to a list'">
           <i class="fas fa-plus"></i>
         </button>
-        <button class="action-btn circle-btn" (click)="rate.emit(); $event.stopPropagation()" title="I like this">
+        <button class="action-btn circle-btn" (click)="rate.emit(); $event.stopPropagation()" title="Rate this title" [attr.aria-label]="'Rate ' + title">
           <i class="far fa-thumbs-up"></i>
         </button>
       </div>
       <div class="right-actions">
-        <button class="action-btn circle-btn" (click)="play.emit(); $event.stopPropagation()" title="More Info">
+        <button class="action-btn circle-btn more-btn" (click)="play.emit(); $event.stopPropagation()" title="More Info" [attr.aria-label]="'View ' + title">
           <i class="fas fa-chevron-down"></i>
         </button>
       </div>
     </div>
 
-    <div class="movie-title">{{ title }}</div>
+    <div class="title-row">
+      <span class="content-type">{{ mediaLabel }}</span>
+      <div class="movie-title">{{ title }}</div>
+    </div>
 
     <div class="meta-info">
-      <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% Match</span>
+      <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% match</span>
       <span class="age-rating" *ngIf="ageRating">{{ ageRating }}</span>
       <span class="duration" *ngIf="formattedRuntime">{{ formattedRuntime }}</span>
       <span class="quality-badge">{{ qualityBadge }}</span>

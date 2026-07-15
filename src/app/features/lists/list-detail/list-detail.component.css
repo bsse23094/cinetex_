@@ -196,3 +196,23 @@
   font-size: var(--text-base);
   color: var(--on-surface-variant);
 }
+
+/* Editorial cinema treatment */
+.list-detail-container { max-width: 1540px; padding: clamp(3.5rem, 7vw, 6.5rem) var(--gutter); }
+.list-header { margin-bottom: 2rem; padding-bottom: 1.4rem; border-bottom: 3px solid #f5f1e9; }
+.list-header::before { display: block; width: 74px; height: 4px; margin-bottom: 1.2rem; background: #e50914; content: ''; }
+.list-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3.1rem, 8vw, 7.4rem); font-weight: 700; letter-spacing: -.09em; line-height: .78; text-transform: uppercase; }
+.list-meta, .card-meta { color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .62rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.list-meta .count, .card-meta .text-accent { color: #e50914; }
+.list-description { max-width: 650px; color: #c6c0b7; }
+.movies-grid { gap: clamp(1rem, 2vw, 1.55rem); }
+.poster-container { border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 5px 5px 0 #e50914; }
+.poster-container img { filter: grayscale(.35) contrast(1.05); transition: filter .2s ease, transform .25s ease; }
+.movie-card:hover .poster-container img { filter: grayscale(0); transform: scale(1.04); }
+.card-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -.045em; }
+.btn-danger { border-radius: 0; color: #fff; border-color: #e50914; background: #e50914; font-family: 'IBM Plex Mono', monospace; font-size: .58rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.btn-danger:hover { background: #f5f1e9; color: #111; transform: translate(3px,3px); }
+.list-header .btn-secondary { width: auto; padding: .7rem .85rem; border: 2px solid #f5f1e9; border-radius: 0; background: #111; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.list-header .btn-secondary:hover { background: #e50914; border-color: #e50914; transform: translateY(-3px); }
+
+@media (max-width: 600px) { .list-detail-container { padding-top: 3rem; } .list-title { font-size: clamp(2.75rem, 15vw, 4.4rem); } .list-header { align-items: flex-start; flex-direction: column; gap: 1.3rem; } }

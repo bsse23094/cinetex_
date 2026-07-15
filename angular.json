@@ -23,6 +23,11 @@
               "src/favicon.ico",
               "src/assets",
               {
+                "glob": "favicon.png",
+                "input": ".",
+                "output": "/"
+              },
+              {
                 "glob": "CNAME",
                 "input": "public",
                 "output": "/"

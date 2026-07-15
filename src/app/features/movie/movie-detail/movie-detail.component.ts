@@ -4,13 +4,13 @@ import { TMDBService } from '../../../core/services/tmdb.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { MovieDetails } from '../../../core/models/movie.model';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
-import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
+import { BackdropUrlPipe } from '../../../shared/pipes/backdrop-url.pipe';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RatingStarsComponent, PosterUrlPipe, DatePipe, DecimalPipe],
+  imports: [CommonModule, RatingStarsComponent, BackdropUrlPipe, DatePipe, DecimalPipe],
   templateUrl: './movie-detail.component.html',
   styleUrl: './movie-detail.component.css',
   providers: [DatePipe]

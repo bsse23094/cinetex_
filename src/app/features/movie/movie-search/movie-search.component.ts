@@ -6,17 +6,18 @@ import { MovieService } from '../movie.service';
 import { Movie } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
-import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
 import { BackdropUrlPipe } from '../../../shared/pipes/backdrop-url.pipe';
 
 import { MovieHoverCardComponent } from '../movie-hover-card/movie-hover-card.component';
+import { Subscription } from 'rxjs';
+import { SupabaseAuthService, TasteSignal } from '../../../core/services/supabase-auth.service';
 
 @Component({
   selector: 'app-movie-search',
   templateUrl: './movie-search.component.html',
   styleUrls: ['./movie-search.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, PosterUrlPipe, BackdropUrlPipe, MovieHoverCardComponent],
+  imports: [CommonModule, FormsModule, BackdropUrlPipe, MovieHoverCardComponent],
   providers: [DatePipe]
 })
 export class MovieSearchComponent implements OnDestroy {
@@ -47,6 +48,7 @@ export class MovieSearchComponent implements OnDestroy {
   topRatedMovies: Movie[] = [];
   nowPlayingMovies: Movie[] = [];
   thrillerMovies: Movie[] = [];
+  personalizedMovies: Movie[] = [];
 
   allContent: Movie[] = []; // Combined content for unified slider
 
@@ -61,8 +63,29 @@ export class MovieSearchComponent implements OnDestroy {
   containerWidth = 0;
 
   @ViewChild('unifiedCarousel') carouselRef!: ElementRef;
+  private authSubscription?: Subscription;
 
-  constructor(private movieService: MovieService, private storage: StorageService, public router: Router, private route: ActivatedRoute) {
+  get contentRows(): { title: string; eyebrow: string; movies: Movie[] }[] {
+    const rows = [
+      { title: 'Trending now', eyebrow: 'Most watched this week', movies: this.recommendedMovies },
+      { title: 'The series desk', eyebrow: 'Fresh television', movies: this.recommendedShows },
+      { title: 'Animation after dark', eyebrow: 'Anime selection', movies: this.recommendedAnime },
+      { title: 'Action, full volume', eyebrow: 'Adrenaline archive', movies: this.actionMovies },
+      { title: 'The all-time cut', eyebrow: 'Critics & crowd', movies: this.topRatedMovies },
+      { title: 'On the big screen', eyebrow: 'Now playing', movies: this.nowPlayingMovies },
+      { title: 'Keep the lights low', eyebrow: 'Thriller selection', movies: this.thrillerMovies }
+    ];
+    if (this.personalizedMovies.length) {
+      rows.unshift({ title: 'A cut for you', eyebrow: 'Built from your taste', movies: this.personalizedMovies });
+    }
+    return rows;
+  }
+
+  trackRow(_: number, row: { title: string }): string {
+    return row.title;
+  }
+
+  constructor(private movieService: MovieService, private storage: StorageService, public router: Router, private route: ActivatedRoute, private auth: SupabaseAuthService) {
     this.loadRatings();
 
     // Subscribe to query params for search and type switching
@@ -83,10 +106,46 @@ export class MovieSearchComponent implements OnDestroy {
 
     // Load recommended content
     this.loadRecommendedContent();
+    this.authSubscription = this.auth.user$.subscribe((user) => {
+      if (user) {
+        void this.loadPersonalizedRecommendations();
+      } else {
+        this.personalizedMovies = [];
+      }
+    });
   }
 
   ngOnDestroy() {
-    // No intervals to clear anymore
+    this.authSubscription?.unsubscribe();
+  }
+
+  private async loadPersonalizedRecommendations(): Promise<void> {
+    try {
+      const tasteProfile = await this.auth.getTasteProfile();
+      const strongestGenre = tasteProfile[0];
+      if (!strongestGenre) {
+        this.personalizedMovies = [];
+        return;
+      }
+
+      this.movieService.discoverMoviesByGenre(strongestGenre.genre_id, 1).subscribe((res: any) => {
+        this.personalizedMovies = (res.results || []).slice(0, 15).map((r: any) => ({
+          id: r.id,
+          title: r.title ?? r.name,
+          name: r.name,
+          poster_path: r.poster_path ?? null,
+          backdrop_path: r.backdrop_path ?? null,
+          release_date: r.release_date ?? r.first_air_date ?? '',
+          first_air_date: r.first_air_date,
+          vote_average: r.vote_average ?? 0,
+          overview: r.overview ?? '',
+          media_type: r.media_type || (r.first_air_date ? 'tv' : 'movie'),
+          genre_ids: r.genre_ids || []
+        } as Movie));
+      });
+    } catch (error) {
+      console.warn('Unable to load personalized recommendations', error);
+    }
   }
 
   loadRecommendedContent() {
@@ -304,6 +363,8 @@ export class MovieSearchComponent implements OnDestroy {
               return true;
             });
 
+            this.allResults = [...this.results];
+            this.activeFilter = 'all';
             this.loading = false;
             this.loadRatings();
           }).catch(() => {
@@ -361,6 +422,7 @@ export class MovieSearchComponent implements OnDestroy {
   }
 
   watchMedia(movie: Movie) {
+    this.trackTaste(movie, 'view');
     // Check the actual media_type of the item
     const mediaType = this.getMediaType(movie);
 
@@ -436,11 +498,13 @@ export class MovieSearchComponent implements OnDestroy {
     if (movieObj) {
       this.storage.ensureWatchedList();
       this.storage.addMovieToList('watched-movies', movieObj);
+      this.trackTaste(movieObj, 'rate', rating);
     }
   }
 
   addToFavorites(movie: Movie) {
     this.storage.addMovieToFavorites(movie);
+    this.trackTaste(movie, 'favorite');
     alert('Added to favorites!');
     this.checkFeaturedFavoriteStatus();
   }
@@ -456,6 +520,21 @@ export class MovieSearchComponent implements OnDestroy {
     } else {
       this.isFeaturedFavorite = false;
     }
+  }
+
+  private trackTaste(movie: Movie, signal: TasteSignal, rating?: number): void {
+    const details = movie as any;
+    const genreIds = details.genre_ids || (details.genres || []).map((genre: any) => genre.id);
+    void this.auth.recordTasteSignal({
+      tmdbId: movie.id,
+      mediaType: this.getMediaType(movie),
+      genreIds,
+      signal,
+      rating,
+      metadata: { title: this.getTitle(movie) }
+    }).then(() => {
+      if (signal === 'favorite' || signal === 'rate') void this.loadPersonalizedRecommendations();
+    }).catch((error) => console.warn('Unable to save taste signal', error));
   }
 
   addToListPrompt(movie: Movie) {

@@ -1,30 +1,22 @@
-<div class="hero-section" style="height: auto; min-height: 60vh; padding-top: 80px;" *ngIf="movie">
-  <div class="hero-bg">
-    <img [src]="movie.poster_path | posterUrl: 'original'" alt="Background">
-  </div>
+<section class="hero-section detail-hero" *ngIf="movie">
+  <div class="hero-bg"><img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title + ' artwork'"></div>
+  <div class="detail-grid" aria-hidden="true"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
+    <span class="detail-kicker">Cinetex / title file</span>
     <h1 class="hero-title">{{ movie.title }}</h1>
     <div class="hero-meta">
       <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% Match</span>
       <span>{{ movie.release_date | date:'yyyy' }}</span>
-      <div class="genre-pills">
-        <span class="genre-pill" *ngFor="let genre of movie.genres">{{ genre.name }}</span>
-      </div>
+      <div class="genre-pills"><span class="genre-pill" *ngFor="let genre of movie.genres">{{ genre.name }}</span></div>
     </div>
     <p class="hero-desc">{{ movie.overview }}</p>
     <div class="hero-actions">
-      <button class="btn-primary" (click)="playMovie()">
-        <i class="fas fa-play"></i> Play Now
+      <button class="btn-primary" (click)="playMovie()"><i class="fas fa-play"></i> Start watching</button>
+      <button class="btn-secondary" (click)="toggleFavourite()" [class.text-accent]="isFavorite" [attr.aria-label]="isFavorite ? 'Remove from favorites' : 'Add to favorites'">
+        <i class="fas fa-heart" *ngIf="isFavorite"></i><i class="far fa-heart" *ngIf="!isFavorite"></i>
       </button>
-      <button class="btn-secondary" (click)="toggleFavourite()" [class.text-accent]="isFavorite">
-        <i class="fas fa-heart" *ngIf="isFavorite"></i>
-        <i class="far fa-heart" *ngIf="!isFavorite"></i>
-      </button>
-      <!-- Rating -->
-      <div style="margin-left: 1rem;">
-        <app-rating-stars [currentRating]="userRating" (ratingChange)="onChangeRating($event)"></app-rating-stars>
-      </div>
+      <div class="detail-rating"><app-rating-stars [currentRating]="userRating" (ratingChange)="onChangeRating($event)"></app-rating-stars></div>
     </div>
   </div>
-</div>
+</section>

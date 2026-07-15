@@ -11,6 +11,8 @@ import { RatedMoviesComponent } from './features/user/rated-movies/rated-movies.
 import { AboutComponent } from './pages/about/about.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { TermsComponent } from './pages/terms/terms.component';
+import { AuthComponent } from './pages/auth/auth.component';
+import { ProfileComponent } from './features/user/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/search', pathMatch: 'full' },
@@ -25,6 +27,6 @@ export const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'privacy', component: PrivacyComponent },
   { path: 'terms', component: TermsComponent },
-  // optional Profile route
-   //{ path: 'profile', component: ProfileComponent }
+  { path: 'auth', component: AuthComponent },
+  { path: 'profile', component: ProfileComponent }
 ];

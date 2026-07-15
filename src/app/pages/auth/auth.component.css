@@ -1,0 +1,33 @@
+:host { display: block; height: 100%; min-height: 0; overflow: hidden; }
+.auth-page { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(410px, .92fr) minmax(430px, 1.08fr); overflow: hidden; background: #090909; }
+.auth-panel { position: relative; display: flex; min-height: 0; padding: clamp(1.25rem,4vh,3.5rem) clamp(1.5rem,5vw,5rem); flex-direction: column; justify-content: space-between; overflow: hidden; background: #f1ede4; color: #111; }
+.auth-panel::before { position: absolute; inset: 0; opacity: .12; background-image: linear-gradient(#111 1px,transparent 1px),linear-gradient(90deg,#111 1px,transparent 1px); background-size: 72px 72px; content: ''; pointer-events: none; }
+.auth-brand, .auth-form-wrap, .auth-footnote { position: relative; z-index: 1; }
+.auth-brand { display: inline-flex; width: fit-content; align-items: center; gap: .65rem; color: #111; font-family: 'Space Grotesk',sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.08em; text-decoration: none; text-transform: uppercase; }
+.auth-brand span { display: grid; width: 32px; height: 32px; place-items: center; border: 2px solid #111; box-shadow: 4px 4px 0 #111; background: #e50914; color: #fff; font-family: 'IBM Plex Mono',monospace; font-size: .85rem; letter-spacing: 0; }
+.auth-form-wrap { width: min(100%, 400px); margin: clamp(.6rem,2.5vh,2rem) 0; }
+.auth-kicker, .auth-footnote { color: #bc0811; font-family: 'IBM Plex Mono',monospace; font-size: .58rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+.auth-form-wrap h1 { margin: .65rem 0 .8rem; font-family: 'Space Grotesk',sans-serif; font-size: clamp(2.8rem,5.6vw,5.1rem); font-weight: 700; letter-spacing: -.1em; line-height: .75; text-transform: uppercase; }
+.auth-intro { max-width: 365px; color: #57534d; font-size: .98rem; font-weight: 500; line-height: 1.55; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; margin-top: clamp(1rem,2.5vh,1.65rem); border: 2px solid #111; box-shadow: 4px 4px 0 #e50914; }
+.auth-tabs button { min-height: 44px; background: transparent; color: #4e4a44; font-family: 'IBM Plex Mono',monospace; font-size: .59rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.auth-tabs button + button { border-left: 2px solid #111; }
+.auth-tabs button.active { background: #111; color: #f1ede4; }
+.auth-form { display: grid; gap: clamp(.55rem,1.6vh,1rem); margin-top: clamp(1rem,2.4vh,1.5rem); }
+.auth-form label { display: grid; gap: .42rem; color: #30302c; font-family: 'IBM Plex Mono',monospace; font-size: .58rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.auth-form input { width: 100%; min-height: clamp(40px,5.2vh,48px); padding: .62rem .75rem; border: 2px solid #111; border-radius: 0; background: rgba(255,255,255,.45); color: #111; font-family: 'Space Grotesk',sans-serif; font-size: .95rem; font-weight: 500; }
+.auth-form input:focus { border-color: #e50914; box-shadow: 4px 4px 0 #e50914; }
+.auth-message { margin: 0; padding: .65rem .75rem; border: 2px solid #111; font-family: 'IBM Plex Mono',monospace; font-size: .59rem; font-weight: 700; line-height: 1.45; }
+.auth-message.error { background: #e50914; color: #fff; }.auth-message.notice { background: #111; color: #f1ede4; }
+.auth-submit { display: inline-flex; min-height: clamp(42px,5.5vh,50px); align-items: center; justify-content: space-between; padding: .62rem .9rem; border: 2px solid #111; box-shadow: 5px 5px 0 #111; background: #e50914; color: #fff; font-family: 'IBM Plex Mono',monospace; font-size: .62rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
+.auth-submit:hover:not(:disabled) { box-shadow: 0 0 0 #111; background: #111; transform: translate(5px,5px); }.auth-submit:disabled { cursor: wait; opacity: .68; }
+.auth-footnote { color: #615d57; line-height: 1.5; }
+.poster-panel { position: relative; display: grid; min-height: 0; overflow: hidden; place-items: center; background: #111; }
+.poster-grid { display: grid; width: 118%; height: 118%; grid-template-columns: repeat(3,1fr); gap: .65rem; padding: .65rem; transform: rotate(-5deg) scale(1.08); }
+.poster-grid img { width: 100%; height: 100%; min-height: 0; object-fit: cover; filter: grayscale(.72) contrast(1.1); }.poster-grid img:nth-child(2n) { transform: translateY(2.2rem); }.poster-grid img:nth-child(3n) { transform: translateY(-1.5rem); }
+.poster-panel-overlay { position: absolute; inset: 0; background: linear-gradient(135deg,rgba(0,0,0,.22),rgba(229,9,20,.43)),linear-gradient(0deg,rgba(8,8,8,.88),transparent 63%); }
+.poster-panel-copy { position: absolute; right: clamp(2rem,6vw,6rem); bottom: clamp(2rem,6vw,5rem); left: clamp(2rem,6vw,6rem); color: #fff; }.poster-panel-copy span, .poster-panel-copy small { display: block; font-family: 'IBM Plex Mono',monospace; font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }.poster-panel-copy span { margin-bottom: 1rem; color: #fff; }.poster-panel-copy strong { display: block; font-family: 'Space Grotesk',sans-serif; font-size: clamp(3rem,7vw,7.6rem); font-weight: 700; letter-spacing: -.1em; line-height: .74; text-transform: uppercase; }.poster-panel-copy small { max-width: 260px; margin-top: 1.2rem; color: rgba(255,255,255,.76); line-height: 1.5; }
+.poster-panel-index { position: absolute; top: 2rem; right: 2rem; padding: .5rem; border: 2px solid #fff; color: #fff; font-family: 'IBM Plex Mono',monospace; font-size: .58rem; font-weight: 700; letter-spacing: .08em; }
+@media (max-width: 850px) { .auth-page { grid-template-columns: 1fr; overflow-y: auto; }.auth-panel { height: auto; min-height: 100%; }.poster-panel { display: none; } }
+@media (max-width: 480px) { .auth-panel { padding: 1.4rem; }.auth-form-wrap h1 { font-size: clamp(3rem,17vw,4.6rem); }.auth-tabs button { font-size: .53rem; } }
+@media (max-height: 720px) and (min-width: 851px) { .auth-panel { padding-top: 1rem; padding-bottom: 1rem; } .auth-brand span { width: 28px; height: 28px; } .auth-form-wrap h1 { font-size: clamp(2.5rem,5vw,3.9rem); } .auth-intro { font-size: .88rem; } .auth-form-wrap { margin: .35rem 0; } .auth-tabs { margin-top: .85rem; } .auth-form { gap: .45rem; margin-top: .8rem; } .auth-form input { min-height: 38px; padding: .48rem .65rem; } .auth-submit { min-height: 40px; } .auth-footnote { font-size: .5rem; } }

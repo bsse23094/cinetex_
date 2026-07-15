@@ -1248,3 +1248,99 @@
     font-size: var(--text-lg);
   }
 }
+
+/* =====================================================================
+   EDITORIAL CINEMA PLAYER OVERRIDES
+   ===================================================================== */
+.player-page { background: #090909; }
+.player-page::before { filter: blur(28px) brightness(.16) grayscale(1); opacity: .42; }
+.continue-banner { padding: 1rem var(--gutter); border-bottom: 2px solid rgba(245,241,233,.34); background: #111; }
+.continue-content { max-width: 1480px; margin: 0 auto; }
+.continue-icon { width: 48px; height: 48px; border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 4px 4px 0 #e50914; background: #e50914; }
+.continue-info h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -.045em; text-transform: uppercase; }
+.continue-info p { color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .63rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.continue-info .highlight { color: #e50914; }
+.continue-actions .btn-primary, .continue-actions .btn-secondary { min-height: 38px; padding: .55rem .75rem; border: 2px solid #f5f1e9; border-radius: 0; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.continue-actions .btn-primary { box-shadow: 3px 3px 0 #e50914; background: #e50914; color: #fff; }
+.continue-actions .btn-secondary { background: transparent; color: #f5f1e9; }
+.continue-actions .btn-primary:hover, .continue-actions .btn-secondary:hover { border-color: #e50914; background: #f5f1e9; color: #111; transform: translate(3px,3px); }
+.player-wrapper { padding: clamp(1rem, 3vw, 2.5rem) var(--gutter); }
+.player-container { border: 3px solid #f5f1e9; border-radius: 0; box-shadow: 9px 9px 0 #e50914; background: #000; }
+.current-episode-badge { top: 0; left: 0; padding: .6rem .7rem; border: 0; border-right: 2px solid #f5f1e9; border-bottom: 2px solid #f5f1e9; border-radius: 0; background: #e50914; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+.current-episode-badge .episode-label { color: #fff; font-size: .52rem; letter-spacing: .08em; }
+.current-episode-badge .episode-info { color: #fff; font-size: .68rem; font-weight: 700; }
+.episode-nav-buttons { gap: .55rem; right: 1rem; bottom: 1rem; }
+.episode-nav-btn { min-height: 38px; padding: 0 .7rem; border: 2px solid #f5f1e9; border-radius: 0; background: #111; color: #f5f1e9; font-family: 'IBM Plex Mono', monospace; font-size: .58rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.episode-nav-btn:hover:not(:disabled) { border-color: #e50914; background: #e50914; transform: translateY(-3px); }
+.episode-nav-btn:disabled { border-color: rgba(245,241,233,.25); }
+.no-video-state { color: #aaa39a; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+.next-episode-overlay { background: rgba(0,0,0,.75); backdrop-filter: blur(8px); }
+.next-episode-card { border: 3px solid #f5f1e9; border-radius: 0; box-shadow: 8px 8px 0 #e50914; background: #111; }
+.next-icon { border-radius: 0; background: #e50914; }
+.btn-play-next { border: 2px solid #f5f1e9; border-radius: 0; background: #e50914; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.btn-play-next:hover { background: #f5f1e9; color: #111; }
+.player-controls { max-width: 1480px; margin: 0 auto; padding: .5rem var(--gutter) 0; }
+.view-toggle { width: fit-content; border: 2px solid #f5f1e9; box-shadow: 4px 4px 0 #e50914; background: #111; }
+.toggle-btn { min-height: 42px; padding: .55rem .85rem; border-bottom: 0; color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.toggle-btn + .toggle-btn { border-left: 1px solid rgba(245,241,233,.4); }
+.toggle-btn.active { border-bottom-color: transparent; background: #e50914; color: #fff; }
+.episodes-section { padding: clamp(2.5rem, 5vw, 4.5rem) 0; }
+.episodes-header { max-width: 1480px; margin: 0 auto 1.35rem; padding: 0 var(--gutter); }
+.section-kicker { display: block; margin-bottom: .6rem; color: #e50914; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.episodes-header h2 { color: #f5f1e9; font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.8rem, 3.7vw, 3.8rem); font-weight: 700; letter-spacing: -.07em; line-height: .86; text-transform: uppercase; }
+.season-dropdown-btn { min-width: 160px; padding: .7rem .85rem; border: 2px solid #f5f1e9; border-radius: 0; background: #111; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.season-dropdown-btn:hover { border-color: #e50914; background: #e50914; }
+.season-dropdown { border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 5px 5px 0 #e50914; background: #111; }
+.season-option { color: #d1cbc2; font-family: 'IBM Plex Mono', monospace; font-size: .62rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.season-option:hover, .season-option.active { background: #e50914; color: #fff; }
+.season-option i { color: #fff; }
+.episodes-grid { gap: 1rem; padding: .6rem var(--gutter) 1.4rem; }
+.episode-card { flex-basis: 340px; border: 2px solid #f5f1e9; border-radius: 0; box-shadow: 5px 5px 0 #e50914; background: #111; }
+.episode-card:hover { background: #111; box-shadow: 8px 8px 0 #e50914; transform: translateY(-6px); }
+.episode-card.current-playing { border-color: #e50914; }
+.episode-thumbnail { border-bottom: 2px solid #f5f1e9; }
+.episode-thumbnail img { filter: grayscale(.45) contrast(1.08); transition: filter .2s ease, transform .25s ease; }
+.episode-card:hover .episode-thumbnail img { filter: grayscale(0); transform: scale(1.05); }
+.episode-overlay { background: rgba(229,9,20,.72); }
+.play-icon { width: 46px; height: 46px; border-radius: 0; background: #f5f1e9; color: #111; }
+.episode-number-badge { top: 0; left: 0; padding: .35rem .48rem; border-right: 2px solid #f5f1e9; border-bottom: 2px solid #f5f1e9; border-radius: 0; background: #f5f1e9; color: #111; font-family: 'IBM Plex Mono', monospace; font-size: .58rem; letter-spacing: .05em; }
+.current-playing-indicator { border-radius: 0; background: #e50914; font-family: 'IBM Plex Mono', monospace; font-size: .55rem; letter-spacing: .05em; }
+.episode-info { padding: .9rem; }
+.episode-info h4 { color: #f5f1e9; font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: -.045em; }
+.episode-info .episode-meta, .episode-overview { color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .58rem; font-weight: 700; letter-spacing: .04em; }
+.episode-info .episode-meta i { color: #e50914; }
+.season-dropdown { max-height: min(360px, calc(100dvh - 11rem)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #e50914 #111; }
+.season-dropdown::-webkit-scrollbar { width: 8px; }
+.season-dropdown::-webkit-scrollbar-track { background: #111; }
+.season-dropdown::-webkit-scrollbar-thumb { background: #e50914; }
+.episode-scroll-actions { display: flex; max-width: 1480px; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 auto; padding: 0 var(--gutter) .35rem; color: #aaa39a; font-family: 'IBM Plex Mono', monospace; font-size: .57rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.episode-scroll-actions > span { display: inline-flex; align-items: center; gap: .45rem; }
+.episode-scroll-actions > span i { color: #e50914; }
+.episode-scroll-actions > div { display: flex; gap: .45rem; }
+.episode-scroll-actions button { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(245,241,233,.55); background: #111; color: #f5f1e9; cursor: pointer; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+.episode-scroll-actions button:hover { border-color: #e50914; background: #e50914; transform: translateY(-2px); }
+.episodes-grid { overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: #e50914 #242424; }
+.episodes-grid::-webkit-scrollbar { display: block; height: 9px; }
+.episodes-grid::-webkit-scrollbar-track { background: #242424; }
+.episodes-grid::-webkit-scrollbar-thumb { border: 2px solid #242424; background: #e50914; }
+.episode-card { scroll-snap-align: start; }
+.details-section { max-width: 1480px; margin: 0 auto; padding: clamp(2.5rem, 5vw, 4.5rem) var(--gutter); }
+.details-content { max-width: none; }
+.details-poster { border: 3px solid #f5f1e9; border-radius: 0; box-shadow: 7px 7px 0 #e50914; }
+.details-info h1 { color: #f5f1e9; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.5rem, 5vw, 5rem); letter-spacing: -.08em; line-height: .82; text-transform: uppercase; }
+.details-meta .badge, .genre-tag { border: 1px solid rgba(245,241,233,.48); border-radius: 0; color: #d4cec5; font-family: 'IBM Plex Mono', monospace; font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.details-meta .badge i { color: #e50914; }
+.overview { color: #c7c1b8; }
+.action-buttons .action-btn { border: 2px solid #f5f1e9; border-radius: 0; background: #111; color: #f5f1e9; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.action-buttons .action-btn:hover, .action-buttons .action-btn.active { border-color: #e50914; background: #e50914; transform: translateY(-3px); }
+.modal-content { border: 3px solid #f5f1e9; border-radius: 0; box-shadow: 8px 8px 0 #e50914; background: #111; }
+.modal-header, .modal-footer { border-color: rgba(245,241,233,.35); }
+.modal-header h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -.05em; text-transform: uppercase; }
+.close-btn, .list-option, .btn-new-list, .list-input, .btn-create, .btn-cancel, .btn-add { border-radius: 0; }
+.list-option { border: 1px solid rgba(245,241,233,.32); background: #181818; }
+.list-option.selected { border-color: #e50914; background: rgba(229,9,20,.16); }
+.list-option.selected i, .btn-new-list:hover { color: #e50914; }
+.btn-create, .btn-add { background: #e50914; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.btn-cancel { background: #262626; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+@media (max-width: 768px) { .player-wrapper { padding-inline: 1rem; } .episodes-header { padding-inline: 1rem; } .episode-scroll-actions { padding-inline: 1rem; } .episode-card { flex-basis: 76vw; } }
