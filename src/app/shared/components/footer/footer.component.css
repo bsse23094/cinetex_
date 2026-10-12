@@ -310,3 +310,57 @@
 
 @media (max-width: 800px) { .footer-cta { align-items: flex-start; flex-direction: column; } .footer-cta-link { width: 100%; justify-content: center; } .footer-grid { grid-template-columns: 1fr 1fr; } .footer-index { display: none; } }
 @media (max-width: 520px) { .footer-grid { grid-template-columns: 1fr; } .footer-section { text-align: left; } .footer-list { align-items: flex-start; } .footer-bottom-content { align-items: flex-start; } .footer-badges { justify-content: flex-start; } }
+
+.app-footer { border-top-width: 1px; }
+.app-footer::before { height: 2px; }
+.footer-cta { border-bottom-width: 1px; }
+.footer-cta h2 { line-height: .82; }
+.footer-cta-link { border-width: 1px; box-shadow: 4px 4px 0 rgba(245,241,233,.85); }
+.footer-cta-link:hover { box-shadow: none; }
+.footer-grid { border-bottom-width: 1px; }
+.footer-link { min-height: 27px; }
+.footer-meta a:focus-visible,
+.footer-link:focus-visible,
+.footer-cta-link:focus-visible { outline: 2px solid #e50914; outline-offset: 4px; }
+
+/* The footer closes the page like an end card. */
+.app-footer { border-top: 1px solid rgba(245,241,233,.24); background: #0b0b0c; }
+.app-footer::before { display: none; }
+.footer-cta { position: relative; min-height: 330px; align-items: end; border-bottom-color: rgba(245,241,233,.3); }
+.footer-cta::before { position: absolute; top: 0; left: var(--gutter); width: 56px; height: 2px; background: #e50914; content: ''; }
+.footer-cta h2 { margin: 1.2rem 0 0; font-size: clamp(3.4rem, 7.4vw, 7rem); line-height: .85; }
+.footer-cta h2 em { color: #f5f1e9; font-style: normal; }
+.footer-cta p { max-width: 430px; margin: 1.5rem 0 0; color: #a99f95; font-size: .94rem; line-height: 1.5; }
+.footer-cta-link { border-color: rgba(245,241,233,.65); box-shadow: none; background: transparent; color: #f5f1e9; }
+.footer-cta-link:hover { border-color: #f5f1e9; box-shadow: none; background: #f5f1e9; transform: none; }
+.footer-grid { grid-template-columns: minmax(0, 1.3fr) minmax(180px, .65fr) minmax(120px, .35fr); }
+.footer-index-number { color: rgba(245,241,233,.75); font-size: clamp(4rem, 7vw, 6.2rem); letter-spacing: -.13em; }
+.footer-index-number span { color: #e50914; }
+.footer-edition { color: #8f8981; font: 700 .58rem 'IBM Plex Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.footer-top-link { display: inline-flex; align-items: center; gap: .5rem; color: #f5f1e9; }
+.footer-top-link i { color: #e50914; font-size: .6rem; }
+@media (max-width: 800px) { .footer-cta { min-height: 0; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .footer-grid { grid-template-columns: 1fr; } .footer-cta h2 { font-size: clamp(3rem, 12vw, 5rem); } .footer-edition { order: 3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-card,
+  .collection-card:hover,
+  .favorite-card,
+  .favorite-card:hover,
+  .rated-card,
+  .rated-card:hover { transform: none; transition: none; }
+}
+
+/* Search previews use the same restrained image treatment as the home rails. */
+.cinema-results { background: radial-gradient(ellipse at 85% 0%, rgba(108,17,22,.09), transparent 34%), #0b0b0c; }
+.compact-card { border: 1px solid rgba(245,241,233,.3); box-shadow: 0 14px 30px rgba(0,0,0,.42), 3px 3px 0 rgba(229,9,20,.65); }
+.compact-card:hover { border-color: rgba(245,241,233,.7); box-shadow: 0 22px 40px rgba(0,0,0,.55), 5px 5px 0 #e50914; transform: translateY(-4px); }
+.compact-card img { filter: saturate(.78) contrast(1.04); }
+.compact-card:hover img { filter: saturate(1) contrast(1.04); transform: scale(1.035); }
+.compact-card-overlay > span { background: rgba(10,10,11,.78); border: 1px solid rgba(245,241,233,.5); color: #f5f1e9; }
+.explore-tag { border-color: rgba(245,241,233,.3); background: rgba(245,241,233,.035); }
+.explore-tag:hover, .explore-tag.active { border-color: #e50914; background: rgba(229,9,20,.14); color: #f5f1e9; }
+@media (prefers-reduced-motion: reduce) {
+  .compact-card, .compact-card:hover,
+  .compact-card img, .compact-card:hover img { transform: none; transition: none; }
+}

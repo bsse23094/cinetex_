@@ -187,3 +187,19 @@
   .content-area { padding-inline: .8rem; }
   .media-index { padding-inline: .5rem; }
 }
+
+/* A quieter preview that keeps the artwork in focus. */
+.hover-card-container { border: 1px solid rgba(245,241,233,.46); box-shadow: 0 24px 58px rgba(0,0,0,.78), 4px 4px 0 rgba(229,9,20,.78); transform: translateY(7px) scale(.98); }
+.hover-card-container:hover { box-shadow: 0 30px 64px rgba(0,0,0,.82), 5px 5px 0 #e50914; }
+.media-area { border-bottom: 1px solid rgba(245,241,233,.3); }
+.media-area img { filter: saturate(.75) contrast(1.06); }
+.hover-card-container:hover .media-area img { filter: saturate(1) contrast(1.04); transform: scale(1.035); }
+.media-area::after { opacity: .09; }
+.media-index { border-bottom: 1px solid rgba(245,241,233,.3); background: rgba(10,10,11,.83); color: #f5f1e9; backdrop-filter: blur(8px); }
+.action-btn { border-width: 1px; }
+.action-btn:hover { transform: translateY(-2px); }
+.play-primary:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+  .hover-card-container, .hover-card-container.visible, .hover-card-container:hover,
+  .media-area img, .hover-card-container:hover .media-area img { transform: none; transition: none; }
+}

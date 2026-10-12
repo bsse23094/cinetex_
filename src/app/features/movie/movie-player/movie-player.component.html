@@ -1,4 +1,13 @@
 <div class="player-page">
+  <header class="screen-heading" aria-label="Now watching">
+    <div class="screen-heading-copy">
+      <span class="screen-kicker"><span class="screen-kicker-dot"></span> Cinetex / Screening room</span>
+      <h1>{{ mediaDetails?.title || mediaDetails?.name || 'Now playing' }}</h1>
+      <p *ngIf="mediaType === 'tv'">Season {{ season }} <span aria-hidden="true">/</span> Episode {{ episode }}<ng-container *ngIf="seasonDetails?.episodes?.[episode - 1]?.name"> <span aria-hidden="true">/</span> {{ seasonDetails.episodes[episode - 1].name }}</ng-container></p>
+      <p *ngIf="mediaType === 'movie'">Feature presentation <span aria-hidden="true">/</span> {{ mediaDetails?.release_date | date:'yyyy' }}</p>
+    </div>
+    <span class="screen-heading-index" aria-hidden="true">C / {{ mediaType === 'tv' ? 'SERIES' : 'FILM' }}</span>
+  </header>
   <!-- Continue Watching Banner -->
   <div *ngIf="showContinueWatching && savedProgress" class="continue-banner">
     <div class="continue-content">
@@ -37,52 +46,32 @@
         <p>No video available</p>
       </div>
 
-      <!-- Current Episode Badge (for TV shows) -->
-      <div *ngIf="mediaType === 'tv'" class="current-episode-badge">
-        <span class="episode-label">Now Playing</span>
-        <span class="episode-info">S{{ season }}:E{{ episode < 10 ? '0' + episode : episode }}</span>
-      </div>
-
-      <!-- Episode Navigation Buttons (for TV shows) -->
-      <div *ngIf="mediaType === 'tv'" class="episode-nav-buttons">
-        <button class="episode-nav-btn prev" (click)="playPreviousEpisode()" [disabled]="!hasPreviousEpisode()"
-          title="Previous Episode">
-          <i class="fas fa-chevron-left"></i>
-          <span>Previous</span>
-        </button>
-        <button class="episode-nav-btn next" (click)="playNextEpisode()" [disabled]="!hasNextEpisode()"
-          title="Next Episode">
-          <span>Next</span>
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-
-      <!-- Next Episode Overlay -->
-      <div *ngIf="showNextEpisode" class="next-episode-overlay">
-        <button class="close-next" (click)="cancelNextEpisode()">
-          <i class="fas fa-times"></i>
-        </button>
-        <div class="next-episode-card">
-          <div class="next-icon">
-            <i class="fas fa-play-circle"></i>
-          </div>
-          <div class="next-info">
-            <h4>Next Episode</h4>
-            <p class="episode-number">
-              <ng-container *ngIf="episode < totalEpisodesInSeason">
-                S{{ season }}:E{{ (episode + 1) < 10 ? '0' + (episode + 1) : (episode + 1) }} </ng-container>
-                  <ng-container *ngIf="episode >= totalEpisodesInSeason && season < totalSeasons">
-                    S{{ season + 1 }}:E01
-                  </ng-container>
-            </p>
-            <p class="countdown">Playing in <span>{{ nextEpisodeCountdown }}s</span></p>
-          </div>
-          <button class="btn-play-next" (click)="playNextEpisode()">
-            <i class="fas fa-play"></i> Play Now
-          </button>
-        </div>
-      </div>
     </div>
+  </div>
+
+  <div class="screen-toolbar" *ngIf="mediaType === 'tv'">
+    <div class="current-episode-badge">
+      <span class="episode-label">On screen</span>
+      <span class="episode-info">S{{ season < 10 ? '0' + season : season }} / E{{ episode < 10 ? '0' + episode : episode }}</span>
+    </div>
+    <div class="episode-nav-buttons" aria-label="Episode navigation">
+      <button type="button" class="episode-nav-btn prev" (click)="playPreviousEpisode()" [disabled]="!hasPreviousEpisode()" aria-label="Previous episode">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i><span>Previous episode</span>
+      </button>
+      <button type="button" class="episode-nav-btn next" (click)="playNextEpisode()" [disabled]="!hasNextEpisode()" aria-label="Next episode">
+        <span>Next episode</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="showNextEpisode" class="next-episode-prompt" role="status" aria-live="polite">
+    <div class="next-icon"><i class="fas fa-play" aria-hidden="true"></i></div>
+    <div class="next-info">
+      <h4>Up next <span *ngIf="episode < totalEpisodesInSeason">S{{ season }} / E{{ episode + 1 }}</span><span *ngIf="episode >= totalEpisodesInSeason && season < totalSeasons">S{{ season + 1 }} / E01</span></h4>
+      <p class="countdown">Playing in <strong>{{ nextEpisodeCountdown }}s</strong></p>
+    </div>
+    <button type="button" class="btn-play-next" (click)="playNextEpisode()"><i class="fas fa-play" aria-hidden="true"></i> Play now</button>
+    <button type="button" class="close-next" (click)="cancelNextEpisode()" aria-label="Dismiss next episode"><i class="fas fa-times" aria-hidden="true"></i></button>
   </div>
 
   <!-- Controls Section -->
@@ -130,8 +119,11 @@
     </div>
 
     <div #episodesGrid id="episodes-grid" class="episodes-grid" *ngIf="seasonDetails && !loadingEpisodes" tabindex="0" aria-label="Episode list. Scroll horizontally to browse more episodes." (wheel)="onEpisodesWheel($event)">
-      <div class="episode-card" *ngFor="let ep of seasonDetails.episodes" (click)="playEpisode(ep.episode_number)"
-        [class.active]="ep.episode_number === episode" [class.current-playing]="ep.episode_number === episode">
+      <article class="episode-card" *ngFor="let ep of seasonDetails.episodes" (click)="playEpisode(ep.episode_number)"
+        (keydown.enter)="playEpisode(ep.episode_number)" (keydown.space)="$event.preventDefault(); playEpisode(ep.episode_number)" role="button" tabindex="0"
+        [class.active]="ep.episode_number === episode" [class.current-playing]="ep.episode_number === episode"
+        [attr.aria-label]="'Play episode ' + ep.episode_number + ': ' + ep.name"
+        [attr.aria-current]="ep.episode_number === episode ? 'true' : null">
         <div class="episode-thumbnail">
           <img [src]="getEpisodeThumbnail(ep)" alt="Episode {{ ep.episode_number }}">
           <div class="episode-overlay">
@@ -154,7 +146,7 @@
           </p>
           <p class="episode-overview" *ngIf="ep.overview">{{ ep.overview }}</p>
         </div>
-      </div>
+      </article>
     </div>
 
     <div *ngIf="loadingEpisodes" class="loading-state">

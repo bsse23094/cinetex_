@@ -1,8 +1,7 @@
-<app-dark-veil></app-dark-veil>
-
 <app-loading-screen *ngIf="isLoading"></app-loading-screen>
 
 <div class="app-container" [class.auth-shell]="isAuthRoute" *ngIf="!isLoading">
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="app-header" [class.scrolled]="isScrolled" *ngIf="!isAuthRoute">
     <a class="logo" routerLink="/search" aria-label="Cinetex home" (click)="closeMobileMenu()">
       <span class="logo-mark">C</span>
@@ -16,8 +15,8 @@
       <div class="mobile-search-container" *ngIf="mobileMenuOpen">
         <div class="mobile-search-bar">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search movies, shows..." #mobileSearchInput (keyup.enter)="onSearch(mobileSearchInput.value); closeMobileMenu()">
-          <button class="search-btn" (click)="onSearch(mobileSearchInput.value); closeMobileMenu()">
+          <input type="search" placeholder="Search movies, shows..." aria-label="Search movies and shows" #mobileSearchInput (keyup.enter)="onSearch(mobileSearchInput.value); closeMobileMenu()">
+          <button type="button" class="search-btn" aria-label="Search" (click)="onSearch(mobileSearchInput.value); closeMobileMenu()">
             <i class="fas fa-search"></i>
           </button>
         </div>
@@ -59,9 +58,10 @@
       </ng-template>
       <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" placeholder="Search..." #searchInput (keyup.enter)="onSearch(searchInput.value)">
-        <button class="search-btn" (click)="onSearch(searchInput.value)">
-          <i class="fas fa-search"></i>
+        <input type="search" placeholder="Search titles" aria-label="Search movies and shows" #searchInput (keyup.enter)="onSearch(searchInput.value)">
+        <kbd class="search-shortcut" aria-hidden="true">/</kbd>
+        <button type="button" class="search-btn" aria-label="Search" (click)="onSearch(searchInput.value)">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
         </button>
       </div>
       <button type="button" class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen" aria-controls="mobile-primary-navigation" [attr.aria-expanded]="mobileMenuOpen" [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'">
@@ -72,7 +72,7 @@
     </div>
   </header>
 
-  <main class="main-content" #mainContent>
+  <main id="main-content" class="main-content" #mainContent>
     <router-outlet></router-outlet>
   </main>
 

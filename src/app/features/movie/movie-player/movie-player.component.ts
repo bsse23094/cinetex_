@@ -54,6 +54,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   showContinueWatching = false;
   savedProgress: any = null;
   progressSaveInterval: any = null;
+  private readonly boundIframeMessage = (event: MessageEvent) => this.handleIframeMessage(event);
 
   // Movie actions
   isFavorite = false;
@@ -111,16 +112,15 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.setVideoUrl();
       this.loadMediaDetails();
+      this.startVideoMonitoring();
     });
   }
 
   ngAfterViewInit(): void {
-    // Start monitoring video progress
-    this.startVideoMonitoring();
     // Start auto-saving progress
     this.startProgressAutoSave();
     // Listen for messages from iframe (if embed supports postMessage)
-    window.addEventListener('message', this.handleIframeMessage.bind(this));
+    window.addEventListener('message', this.boundIframeMessage);
   }
 
   ngOnDestroy(): void {
@@ -135,7 +135,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       clearInterval(this.progressSaveInterval);
     }
     // Remove event listener
-    window.removeEventListener('message', this.handleIframeMessage.bind(this));
+    window.removeEventListener('message', this.boundIframeMessage);
     // Save progress one last time before leaving
     this.saveProgress();
   }
@@ -255,6 +255,9 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   startVideoMonitoring(): void {
+    if (this.videoProgressInterval) {
+      clearTimeout(this.videoProgressInterval);
+    }
     // For TV shows, show next episode prompt after estimated duration
     if (this.mediaType === 'tv') {
       // Typical TV episode is ~42-45 minutes, show prompt at ~40 minutes
@@ -300,7 +303,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.hasPreviousEpisode()) return;
 
     // Reset states
-    this.showNextEpisode = false;
+    this.cancelNextEpisode();
     this.videoCurrentTime = 0;
     this.videoDuration = 0;
 
@@ -369,7 +372,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.hasNextEpisode()) return;
 
     // Reset states
-    this.showNextEpisode = false;
+    this.cancelNextEpisode();
     this.videoCurrentTime = 0;
     this.videoDuration = 0;
 
@@ -469,6 +472,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSeasonChange(newSeason: number): void {
+    this.cancelNextEpisode();
     this.season = newSeason;
     this.episode = 1;
     this.loadSeasonDetails(newSeason);
@@ -487,6 +491,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   selectEpisode(episodeNumber: number): void {
+    this.cancelNextEpisode();
     this.episode = episodeNumber;
     this.videoCurrentTime = 0;
     this.videoDuration = 2700; // Reset duration

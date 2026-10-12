@@ -31,3 +31,22 @@
 @media (max-width: 850px) { .auth-page { grid-template-columns: 1fr; overflow-y: auto; }.auth-panel { height: auto; min-height: 100%; }.poster-panel { display: none; } }
 @media (max-width: 480px) { .auth-panel { padding: 1.4rem; }.auth-form-wrap h1 { font-size: clamp(3rem,17vw,4.6rem); }.auth-tabs button { font-size: .53rem; } }
 @media (max-height: 720px) and (min-width: 851px) { .auth-panel { padding-top: 1rem; padding-bottom: 1rem; } .auth-brand span { width: 28px; height: 28px; } .auth-form-wrap h1 { font-size: clamp(2.5rem,5vw,3.9rem); } .auth-intro { font-size: .88rem; } .auth-form-wrap { margin: .35rem 0; } .auth-tabs { margin-top: .85rem; } .auth-form { gap: .45rem; margin-top: .8rem; } .auth-form input { min-height: 38px; padding: .48rem .65rem; } .auth-submit { min-height: 40px; } .auth-footnote { font-size: .5rem; } }
+
+/* Keep the account screen connected to the film archive's material and color. */
+.auth-panel { background: #eee9df; }
+.auth-panel::before { opacity: .055; background-size: 84px 84px; }
+.auth-form-wrap { width: min(100%, 430px); }
+.auth-form-wrap h1 { line-height: .84; }
+.auth-intro { color: #504c46; }
+.auth-tabs { border-width: 1px; box-shadow: 3px 3px 0 #e50914; }
+.auth-tabs button + button { border-left-width: 1px; }
+.auth-form input { border-width: 1px; background: rgba(255,255,255,.62); }
+.auth-form input:focus-visible { outline: 2px solid #e50914 !important; outline-offset: 2px; box-shadow: none !important; }
+.auth-submit { border-width: 1px; box-shadow: 4px 4px 0 #111; }
+.poster-grid { transform: rotate(-4deg) scale(1.06); }
+.poster-grid img { filter: saturate(.7) contrast(1.06); }
+.poster-panel-overlay { background: linear-gradient(130deg,rgba(0,0,0,.12),rgba(70,5,10,.45)),linear-gradient(0deg,rgba(8,8,8,.9),transparent 68%); }
+@media (prefers-reduced-motion: no-preference) {
+  .poster-grid img { transition: filter .35s ease, transform .45s cubic-bezier(.22,1,.36,1); }
+  .poster-grid img:hover { filter: saturate(1.05) contrast(1.04); transform: translateY(-.6rem) rotate(1deg); }
+}

@@ -39,3 +39,13 @@
 .detail-hero .hero-actions { align-items: center; }
 .detail-rating { margin-left: .5rem; padding-left: .9rem; border-left: 2px solid rgba(245,241,233,.45); }
 @media (max-width:600px) { .detail-hero { min-height:680px; padding-top:8.2rem; } .detail-hero .hero-bg { left:20%; } .detail-hero .hero-title { font-size:clamp(3.5rem,19vw,5.75rem); } .detail-rating { width:100%; margin:.3rem 0 0; padding:.75rem 0 0; border-top:2px solid rgba(245,241,233,.45); border-left:0; } }
+
+.detail-hero { border-bottom-width: 1px; }
+.detail-hero .hero-bg img { filter: saturate(.78) contrast(1.06); opacity: .84; transform: scale(1.035); }
+.detail-grid { opacity: .12; }
+.detail-hero .hero-overlay { background: linear-gradient(90deg,#080808 0%,rgba(8,8,8,.95) 30%,rgba(8,8,8,.48) 68%,rgba(8,8,8,.1)),linear-gradient(0deg,#080808 0%,transparent 53%); }
+.detail-hero::after { border-width: 1px; box-shadow: 5px 5px 0 #f5f1e9; }
+.detail-hero .hero-desc { color: #e0d8cd; line-height: 1.62; }
+.detail-hero .hero-meta > * { border-left-width: 1px; }
+.detail-rating { border-left-width: 1px; }
+@media (max-width:600px) { .detail-rating { border-top-width: 1px; } }

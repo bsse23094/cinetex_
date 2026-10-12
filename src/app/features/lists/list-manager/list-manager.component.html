@@ -1,12 +1,13 @@
 <div class="library-container">
   <div class="library-header">
     <div class="header-content">
+      <span class="page-eyebrow">Personal archive / 03</span>
       <h1 class="page-title">my library</h1>
       <p class="page-subtitle">curate your personal collections</p>
     </div>
   </div>
   
-  <div class="create-list-section">
+  <div id="create-collection" class="create-list-section">
     <form (ngSubmit)="addList()" class="create-list-form">
       <div class="form-group">
         <input 
@@ -36,7 +37,7 @@
   </div>
 
   <div class="collections-grid">
-    <div *ngFor="let list of lists" class="collection-card" [routerLink]="['/list', list.id]">
+    <div #collectionCard *ngFor="let list of lists" class="collection-card" [routerLink]="['/list', list.id]" role="link" tabindex="0" [attr.aria-label]="'Open ' + list.title + ' collection'" (keydown.enter)="collectionCard.click()" (keydown.space)="$event.preventDefault(); collectionCard.click()">
       <div class="collection-preview">
         <div class="preview-stack">
           <ng-container *ngFor="let movieId of list.movies.slice(0, 3); let i = index">
@@ -70,7 +71,7 @@
             <i class="fas fa-film"></i>
             {{ list.movies.length }} {{ list.movies.length === 1 ? 'item' : 'items' }}
           </span>
-          <button class="btn-delete-mini" (click)="deleteList(list.id); $event.stopPropagation()">
+          <button type="button" class="btn-delete-mini" [attr.aria-label]="'Delete ' + list.title + ' collection'" (click)="deleteList(list.id); $event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -78,11 +79,11 @@
     </div>
     
     <!-- Add New Collection Card -->
-    <div class="collection-card add-new-card">
+    <a class="collection-card add-new-card" href="#create-collection" aria-label="Create a new collection">
       <div class="add-new-content">
         <i class="fas fa-plus-circle"></i>
         <span>create new collection</span>
       </div>
-    </div>
+    </a>
   </div>
 </div>

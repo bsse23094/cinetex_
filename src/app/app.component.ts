@@ -5,17 +5,15 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { filter, Subscription } from 'rxjs';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LoadingScreenComponent } from './shared/components/loading-screen/loading-screen.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { ChatbotComponent } from './shared/components/chatbot/chatbot.component';
-import { DarkVeilComponent } from './shared/components/dark-veil/dark-veil.component';
 import { AuthUser, SupabaseAuthService } from './core/services/supabase-auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LoadingScreenComponent, FooterComponent, ChatbotComponent, DarkVeilComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LoadingScreenComponent, FooterComponent, ChatbotComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -27,6 +25,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   isAuthRoute = false;
   authUser: AuthUser | null = null;
   @ViewChild('mainContent') mainContent?: ElementRef<HTMLElement>;
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
   private router = inject(Router);
   private renderer = inject(Renderer2);
   private zone = inject(NgZone);
@@ -34,6 +33,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private auth = inject(SupabaseAuthService);
   private lenis?: Lenis;
   private observer?: MutationObserver;
+  private revealObserver?: IntersectionObserver;
   private animationTimeout?: ReturnType<typeof setTimeout>;
   private routeSubscription?: Subscription;
   private authSubscription?: Subscription;
@@ -43,49 +43,62 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isAuthRoute = this.router.url.startsWith('/auth');
     this.authRouteSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe((event) => this.isAuthRoute = event.urlAfterRedirects.startsWith('/auth'));
+      .subscribe((event) => {
+        this.isAuthRoute = event.urlAfterRedirects.startsWith('/auth');
+        if (this.mobileMenuOpen) this.closeMobileMenu();
+      });
     this.authSubscription = this.auth.user$.subscribe((user) => this.authUser = user);
-    // Simulate loading time - adjust as needed
+    // Keep the opening transition brief so the page is ready without a forced pause.
     setTimeout(() => {
       this.isLoading = false;
       // The route outlet is created with the app shell after the loading screen.
       // Attach the observer on the following frame, once #mainContent exists.
       if (isPlatformBrowser(this.platformId)) requestAnimationFrame(() => this.attachMotionSurface());
-    }, 2000); // 2 seconds loading screen
+    }, 420);
   }
 
   ngAfterViewInit() {
     if (!isPlatformBrowser(this.platformId) || this.prefersReducedMotion()) return;
 
     this.zone.runOutsideAngular(() => {
-      gsap.registerPlugin(ScrollTrigger);
       this.lenis = new Lenis({
+        autoRaf: true,
         duration: 1.05,
         smoothWheel: true,
         syncTouch: false,
         anchors: { offset: -92 }
       });
-
-      this.lenis.on('scroll', () => ScrollTrigger.update());
-      gsap.ticker.add((time) => this.lenis?.raf(time * 1000));
-      gsap.ticker.lagSmoothing(0);
+      this.revealObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const element = entry.target as HTMLElement;
+          this.revealObserver?.unobserve(element);
+          this.playReveal(element);
+        }
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
 
       this.routeSubscription = this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-        .subscribe(() => this.scheduleMotion());
+        .subscribe(() => {
+          this.revealObserver?.disconnect();
+          this.mainContent?.nativeElement.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-row]')
+            .forEach((element) => delete element.dataset['motionBound']);
+          this.scheduleMotion();
+        });
 
       this.attachMotionSurface();
     });
   }
 
   ngOnDestroy() {
+    if (isPlatformBrowser(this.platformId)) this.renderer.removeStyle(document.body, 'overflow');
     this.routeSubscription?.unsubscribe();
     this.authRouteSubscription?.unsubscribe();
     this.authSubscription?.unsubscribe();
     this.observer?.disconnect();
+    this.revealObserver?.disconnect();
     if (this.animationTimeout) clearTimeout(this.animationTimeout);
     this.lenis?.destroy();
-    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
   }
 
   private scheduleMotion() {
@@ -94,61 +107,52 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private attachMotionSurface() {
-    if (!this.lenis || !this.mainContent?.nativeElement) return;
+    if (!this.revealObserver || !this.mainContent?.nativeElement) return;
+    const root = this.mainContent.nativeElement;
+    this.renderer.addClass(root, 'motion-ready');
     if (!this.observer) {
-      this.observer = new MutationObserver(() => this.scheduleMotion());
-      this.observer.observe(this.mainContent.nativeElement, { childList: true, subtree: true });
+      this.observer = new MutationObserver((records) => {
+        if (records.some((record) => record.addedNodes.length > 0)) this.scheduleMotion();
+      });
+      this.observer.observe(root, { childList: true, subtree: true });
     }
     this.scheduleMotion();
   }
 
   private bindScrollMotion() {
     const root = this.mainContent?.nativeElement;
-    if (!root) return;
+    if (!root || !this.revealObserver) return;
 
-    root.querySelectorAll<HTMLElement>('[data-reveal]').forEach((element) => {
+    root.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-row]').forEach((element) => {
       if (element.dataset['motionBound']) return;
       element.dataset['motionBound'] = 'true';
-      gsap.fromTo(element, { autoAlpha: 0, y: 34 }, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.78,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: element, start: 'top 88%', once: true }
-      });
-    });
-
-    root.querySelectorAll<HTMLElement>('[data-reveal-row]').forEach((row) => {
-      if (row.dataset['motionBound']) return;
-      row.dataset['motionBound'] = 'true';
-      const heading = row.querySelector('.row-heading');
-      const cards = Array.from(row.querySelectorAll<HTMLElement>('.movie-card')).slice(0, 7);
-      const timeline = gsap.timeline({
-        scrollTrigger: { trigger: row, start: 'top 84%', once: true }
-      });
-      if (heading) timeline.from(heading, { autoAlpha: 0, x: -28, duration: 0.58, ease: 'power3.out' });
-      if (cards.length) timeline.from(cards, {
-        autoAlpha: 0,
-        y: 34,
-        stagger: 0.075,
-        duration: 0.6,
-        ease: 'power3.out'
-      }, heading ? '-=0.2' : 0);
+      this.revealObserver?.observe(element);
     });
 
     root.querySelectorAll<HTMLElement>('[data-hero-reveal]').forEach((element, index) => {
       if (element.dataset['motionBound']) return;
       element.dataset['motionBound'] = 'true';
-      gsap.fromTo(element, { autoAlpha: 0, y: index === 1 ? 70 : 20 }, {
+      gsap.fromTo(element, { autoAlpha: 0, y: index === 1 ? 42 : 16 }, {
         autoAlpha: 1,
         y: 0,
-        duration: index === 1 ? 0.95 : 0.55,
-        delay: index * 0.08,
+        duration: index === 1 ? 0.75 : 0.45,
+        delay: index * 0.06,
         ease: 'power3.out'
       });
     });
+  }
 
-    ScrollTrigger.refresh();
+  private playReveal(element: HTMLElement) {
+    if (element.hasAttribute('data-reveal-row')) {
+      gsap.set(element, { opacity: 1 });
+      const heading = element.querySelector('.row-heading');
+      const cards = Array.from(element.querySelectorAll<HTMLElement>('.movie-card')).slice(0, 4);
+      const timeline = gsap.timeline();
+      if (heading) timeline.from(heading, { autoAlpha: 0, x: -18, duration: .45, ease: 'power2.out' });
+      if (cards.length) timeline.from(cards, { autoAlpha: 0, y: 18, stagger: .05, duration: .4, ease: 'power2.out' }, heading ? '-=.15' : 0);
+      return;
+    }
+    gsap.fromTo(element, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: .52, ease: 'power2.out' });
   }
 
   private prefersReducedMotion(): boolean {
@@ -158,6 +162,21 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('window:scroll')
   onWindowScroll() {
     this.isScrolled = window.pageYOffset > 50;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.mobileMenuOpen) this.closeMobileMenu();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onSearchShortcut(event: KeyboardEvent) {
+    if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || this.isAuthRoute) return;
+    const target = event.target;
+    if (target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+    if (!this.searchInput?.nativeElement || window.matchMedia('(max-width: 850px)').matches) return;
+    event.preventDefault();
+    this.searchInput.nativeElement.focus();
   }
 
   toggleMobileMenu() {

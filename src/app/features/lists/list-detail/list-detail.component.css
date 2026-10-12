@@ -5,8 +5,7 @@
 }
 
 .list-detail-container {
-  padding: var(--gutter);
-  padding-top: calc(var(--nav-height) + var(--sp-8));
+  padding: clamp(3.5rem, 7vw, 6.5rem) var(--gutter);
   max-width: 1600px;
   margin: 0 auto;
 }
@@ -216,3 +215,9 @@
 .list-header .btn-secondary:hover { background: #e50914; border-color: #e50914; transform: translateY(-3px); }
 
 @media (max-width: 600px) { .list-detail-container { padding-top: 3rem; } .list-title { font-size: clamp(2.75rem, 15vw, 4.4rem); } .list-header { align-items: flex-start; flex-direction: column; gap: 1.3rem; } }
+
+.list-header { border-bottom-width: 1px; border-bottom-color: rgba(245,241,233,.34); }
+.list-header::before { height: 3px; }
+.list-header .page-eyebrow { display: block; margin-bottom: .8rem; color: #e50914; font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.list-header .btn-secondary { height: auto; min-height: 42px; padding: .7rem .85rem; border: 1px solid rgba(245,241,233,.42); background: rgba(245,241,233,.05); font-size: .61rem; }
+.list-header .btn-secondary:hover { border-color: #e50914; background: #e50914; color: #fff; transform: none; }

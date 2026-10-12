@@ -35,3 +35,25 @@
   .profile-avatar { width: 62px; height: 62px; font-size: 2.2rem; box-shadow: 5px 5px 0 #f5f1e9; }
   .profile-summary { grid-template-columns: 1fr; }
 }
+
+.profile-container { position: relative; width: min(900px, calc(100% - 2 * var(--gutter))); min-height: 65vh; padding-top: clamp(4rem, 8vw, 7rem); }
+.profile-container::before { position: absolute; top: clamp(2rem, 4vw, 3.7rem); left: 0; width: 70px; height: 3px; background: #e50914; content: ''; }
+.profile-kicker { margin-bottom: 1.4rem; letter-spacing: .15em; }
+.profile-header { gap: clamp(1.25rem, 3vw, 2.5rem); padding-bottom: clamp(2rem, 4vw, 3rem); }
+.profile-avatar { width: clamp(72px, 10vw, 106px); height: clamp(72px, 10vw, 106px); border: 1px solid #f5f1e9; box-shadow: 6px 6px 0 #e50914; }
+.profile-header h1, .profile-empty h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.7rem, 6vw, 5.8rem); font-weight: 700; letter-spacing: -.085em; line-height: .88; text-transform: uppercase; overflow-wrap: anywhere; }
+.profile-header p { color: #bdb5aa; font-size: .77rem; overflow-wrap: anywhere; }
+.profile-summary { gap: 1rem; margin: clamp(2rem, 4vw, 3rem) 0; background: none; }
+.profile-summary div { min-height: 112px; align-content: center; padding: 1.4rem; border: 1px solid rgba(245,241,233,.28); border-left: 3px solid #e50914; background: linear-gradient(120deg, rgba(245,241,233,.055), rgba(245,241,233,.015)); }
+.profile-summary span { color: #b6ada3; }
+.profile-summary strong { font-size: 1.05rem; }
+.profile-signout { min-height: 42px; padding: .75rem 1rem; border: 1px solid rgba(245,241,233,.5); background: transparent; transition: background .18s ease, color .18s ease; }
+.profile-signout:hover { border-color: #e50914; background: #e50914; color: #fff; }
+.profile-empty .profile-signout { width: fit-content; border-color: #e50914; background: #e50914; }
+.profile-empty .profile-signout:hover { border-color: #f5f1e9; background: #f5f1e9; color: #111; }
+@media (max-width: 560px) {
+  .profile-container { width: calc(100% - 2rem); padding-top: 4rem; }
+  .profile-container::before { top: 2.4rem; }
+  .profile-summary { grid-template-columns: 1fr; }
+  .profile-header { align-items: center; }
+}

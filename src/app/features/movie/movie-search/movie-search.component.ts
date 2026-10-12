@@ -7,6 +7,7 @@ import { Movie } from '../../../core/models/movie.model';
 import { StorageService } from '../../../core/services/storage.service';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 import { BackdropUrlPipe } from '../../../shared/pipes/backdrop-url.pipe';
+import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
 
 import { MovieHoverCardComponent } from '../movie-hover-card/movie-hover-card.component';
 import { Subscription } from 'rxjs';
@@ -17,11 +18,12 @@ import { SupabaseAuthService, TasteSignal } from '../../../core/services/supabas
   templateUrl: './movie-search.component.html',
   styleUrls: ['./movie-search.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, BackdropUrlPipe, MovieHoverCardComponent],
+  imports: [CommonModule, FormsModule, BackdropUrlPipe, PosterUrlPipe, MovieHoverCardComponent],
   providers: [DatePipe]
 })
 export class MovieSearchComponent implements OnDestroy {
   query = '';
+  searchDraft = '';
   results: Movie[] = [];
   loading = false;
   showListPrompt = false;
@@ -37,6 +39,12 @@ export class MovieSearchComponent implements OnDestroy {
   isShowsMode = false;
   featuredMovie: Movie | null = null;
   isFeaturedFavorite = false;
+  activeMood: 'considered' | 'velocity' | 'afterhours' = 'considered';
+  readonly moodOptions = [
+    { key: 'considered' as const, label: 'Considered', number: '01' },
+    { key: 'velocity' as const, label: 'Velocity', number: '02' },
+    { key: 'afterhours' as const, label: 'After hours', number: '03' }
+  ];
 
   // Recommended content for sliders
   recommendedMovies: Movie[] = [];
@@ -85,6 +93,33 @@ export class MovieSearchComponent implements OnDestroy {
     return row.title;
   }
 
+  get moodFeature(): Movie | null {
+    const movies = this.activeMood === 'considered'
+      ? this.topRatedMovies
+      : this.activeMood === 'velocity' ? this.actionMovies : this.thrillerMovies;
+    return movies.find((movie) => movie.backdrop_path && movie.poster_path) || movies[0] || null;
+  }
+
+  get moodNote(): string {
+    return this.activeMood === 'considered'
+      ? 'For the nights you want to stay with a story.'
+      : this.activeMood === 'velocity'
+        ? 'For when the room needs a little electricity.'
+        : 'For the final scene before the lights come on.';
+  }
+
+  get moodLabel(): string {
+    return this.moodOptions.find((mood) => mood.key === this.activeMood)?.label || '';
+  }
+
+  moodAvailable(key: 'considered' | 'velocity' | 'afterhours'): boolean {
+    return (key === 'considered' ? this.topRatedMovies : key === 'velocity' ? this.actionMovies : this.thrillerMovies).length > 0;
+  }
+
+  setMood(key: 'considered' | 'velocity' | 'afterhours'): void {
+    if (this.moodAvailable(key)) this.activeMood = key;
+  }
+
   constructor(private movieService: MovieService, private storage: StorageService, public router: Router, private route: ActivatedRoute, private auth: SupabaseAuthService) {
     this.loadRatings();
 
@@ -92,9 +127,11 @@ export class MovieSearchComponent implements OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['query']) {
         this.query = params['query'];
+        this.searchDraft = this.query;
         this.search();
       } else {
         this.query = '';
+        this.searchDraft = '';
         this.results = [];
       }
 
@@ -117,6 +154,7 @@ export class MovieSearchComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.authSubscription?.unsubscribe();
+    clearTimeout(this.hoverTimeout);
   }
 
   private async loadPersonalizedRecommendations(): Promise<void> {
@@ -298,6 +336,9 @@ export class MovieSearchComponent implements OnDestroy {
   search() {
     if (!this.query.trim()) return;
     this.loading = true;
+    this.results = [];
+    this.allResults = [];
+    this.activeFilter = 'all';
 
     // Use multi-search to find movies, TV shows, and people
     this.movieService.multiSearch(this.query).subscribe({
@@ -390,6 +431,11 @@ export class MovieSearchComponent implements OnDestroy {
     });
   }
 
+  submitSearch(): void {
+    const query = this.searchDraft.trim();
+    if (query) this.router.navigate(['/search'], { queryParams: { query } });
+  }
+
   // Filter results by media type
   filterResults(filterType: string) {
     this.activeFilter = filterType;
@@ -462,21 +508,22 @@ export class MovieSearchComponent implements OnDestroy {
   }
 
   scrollSliderLeft(event: Event) {
-    const button = event.currentTarget as HTMLElement;
-    const sliderRow = button.closest('.slider-row') as HTMLElement;
-    const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
-    if (container) {
-      container.scrollBy({ left: -600, behavior: 'smooth' });
-    }
+    this.scrollSliderRow(event, -1);
   }
 
   scrollSliderRight(event: Event) {
+    this.scrollSliderRow(event, 1);
+  }
+
+  private scrollSliderRow(event: Event, direction: -1 | 1): void {
     const button = event.currentTarget as HTMLElement;
     const sliderRow = button.closest('.slider-row') as HTMLElement;
     const container = sliderRow?.querySelector('.slider-container') as HTMLElement;
-    if (container) {
-      container.scrollBy({ left: 600, behavior: 'smooth' });
-    }
+    const card = container?.querySelector<HTMLElement>('.movie-card');
+    const track = container?.querySelector<HTMLElement>('.slider-track');
+    if (!container || !card || !track) return;
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    container.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
   }
 
   onChangeRating(movieId: number, rating: number) {
@@ -605,6 +652,7 @@ export class MovieSearchComponent implements OnDestroy {
   private hoveredSliderTrack: HTMLElement | null = null;
 
   onMouseEnter(movie: Movie, event: MouseEvent) {
+    if (window.matchMedia('(hover: none)').matches) return;
     // Cancel any pending close
     clearTimeout(this.hoverTimeout);
 
