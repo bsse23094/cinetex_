@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import type { WebGLRenderer, Group, Mesh, Material, BufferGeometry, Texture, PerspectiveCamera, Scene, WebGLRenderTarget } from 'three';
 import { nearestReelPhase, reelPose } from './reel-motion';
 import { Movie } from '../../../core/models/movie.model';
+import { loadReelArtwork, reelArtworkUrls } from './reel-artwork';
 
 @Component({
   selector: 'app-cinema-atmosphere',
@@ -10,7 +11,7 @@ import { Movie } from '../../../core/models/movie.model';
   imports: [CommonModule],
   template: `
     <div class="reel-fallback" [class.is-rendered]="ready" aria-hidden="true">
-      <img *ngFor="let film of fallbackFilms; let i = index" [src]="poster(film)" alt="" [style.--card]="i">
+      <img *ngFor="let film of fallbackFilms; let i = index" [src]="poster(film)" crossorigin="anonymous" (error)="fallbackImageError($event, film)" alt="" [style.--card]="i">
     </div>
     <div class="reel-canvas" [class.is-ready]="ready" #surface aria-hidden="true"></div>
   `,
@@ -40,6 +41,8 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
   private textures: Texture[] = [];
+  private pictureMaterials: Material[] = [];
+  private panelGeneration = 0;
   private environment?: WebGLRenderTarget;
   private resizeObserver?: ResizeObserver;
   private observer?: IntersectionObserver;
@@ -68,11 +71,45 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
     return [-1, 0, 1].map(offset => this.films[(current + offset + this.films.length) % this.films.length]);
   }
   poster(film: Movie): string {
-    if (!film.poster_path) return 'assets/no-poster.svg';
-    return film.poster_path.startsWith('http') ? film.poster_path : 'https://image.tmdb.org/t/p/w500' + film.poster_path;
+    return reelArtworkUrls(film)[0] || 'assets/no-poster.svg';
+  }
+  fallbackImageError(event: Event, film: Movie): void {
+    const image = event.target as HTMLImageElement;
+    const urls = reelArtworkUrls(film);
+    const current = urls.indexOf(image.src);
+    const next = current >= 0 ? urls[current + 1] : undefined;
+    if (!image.src.endsWith('/assets/no-poster.svg')) image.src = next || 'assets/no-poster.svg';
+  }
+  private titleCard(film: Movie): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = 500;
+    canvas.height = 750;
+    const context = canvas.getContext('2d')!;
+    const wash = context.createLinearGradient(0, 0, 500, 750);
+    wash.addColorStop(0, '#36402a');
+    wash.addColorStop(1, '#10150e');
+    context.fillStyle = wash;
+    context.fillRect(0, 0, 500, 750);
+    context.strokeStyle = '#b9ca7760';
+    context.strokeRect(26, 26, 448, 698);
+    context.fillStyle = '#d9f76c';
+    context.font = 'italic 38px Georgia';
+    context.fillText('cinetex.', 50, 94);
+    context.fillStyle = '#eff1e5';
+    context.font = '38px Georgia';
+    const lines: string[] = [];
+    let line = '';
+    for (const word of (film.title || film.name || 'Feature film').split(/\s+/)) {
+      const candidate = line ? line + ' ' + word : word;
+      if (line && context.measureText(candidate).width > 400) { lines.push(line); line = word; }
+      else line = candidate;
+    }
+    if (line) lines.push(line);
+    lines.slice(0, 7).forEach((text, index) => context.fillText(text, 50, 350 + index * 48, 400));
+    return canvas;
   }
   ngOnChanges(changes: SimpleChanges): void {
-    const signature = this.films.map(film => film.id + ':' + film.poster_path).join('|');
+    const signature = this.films.map(film => film.id + ':' + film.poster_path + ':' + film.backdrop_path).join('|');
     const filmsChanged = signature !== this.signature;
     if (filmsChanged) { this.signature = signature; this.buildPanels?.(); }
     if (this.dragStart === undefined && (filmsChanged || changes['selectedIndex'])) this.targetPhase = nearestReelPhase(this.selectedIndex, this.targetPhase, this.films.length);
@@ -193,13 +230,21 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
       this.geometries.push(frameGeometry, posterGeometry, holeGeometry);
       const loader = new T.TextureLoader();
       this.buildPanels = () => {
+        const generation = ++this.panelGeneration;
         this.panels.forEach(panel => this.reel!.remove(panel));
         this.panels = [];
+        this.pictureMaterials.forEach(material => material.dispose());
+        this.pictureMaterials = [];
+        this.textures.forEach(texture => texture.dispose());
+        this.textures = [];
         this.films.forEach((film, index) => {
           const panel = new T.Group();
           panel.add(new T.Mesh(frameGeometry, metal));
-          const pictureMaterial = new T.MeshBasicMaterial({ color: 0x10110e });
-          this.materials.push(pictureMaterial);
+          const placeholder = new T.CanvasTexture(this.titleCard(film));
+          placeholder.colorSpace = T.SRGBColorSpace;
+          this.textures.push(placeholder);
+          const pictureMaterial = new T.MeshBasicMaterial({ map: placeholder, toneMapped: false });
+          this.pictureMaterials.push(pictureMaterial);
           const picture = new T.Mesh(posterGeometry, pictureMaterial);
           picture.position.z = .04;
           panel.add(picture);
@@ -213,17 +258,33 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
           panel.rotation.y = pose.turn;
           this.reel!.add(panel);
           this.panels.push(panel);
-          loader.load(this.poster(film), texture => {
-            if (this.destroyed) { texture.dispose(); return; }
+          const isCurrent = () => !this.destroyed && generation === this.panelGeneration;
+          void loadReelArtwork<Texture>(reelArtworkUrls(film), loader, isCurrent).then(texture => {
+            if (!isCurrent()) { texture?.dispose(); return; }
+            if (!texture) {
+              if (!this.ready) this.zone.run(() => { this.ready = true; this.cd.markForCheck(); });
+              if (this.motion?.matches) this.renderFrame?.(0);
+              return;
+            }
             texture.colorSpace = T.SRGBColorSpace;
             texture.anisotropy = Math.min(4, this.renderer!.capabilities.getMaxAnisotropy());
+            const image = texture.image as HTMLImageElement;
+            const imageRatio = image.naturalWidth / image.naturalHeight;
+            const frameRatio = 2.40 / 3.62;
+            if (imageRatio > frameRatio) {
+              texture.repeat.x = frameRatio / imageRatio;
+              texture.offset.x = (1 - texture.repeat.x) / 2;
+            } else if (imageRatio > 0) {
+              texture.repeat.y = imageRatio / frameRatio;
+              texture.offset.y = (1 - texture.repeat.y) / 2;
+            }
             pictureMaterial.color.set(0xffffff);
             pictureMaterial.map = texture;
             pictureMaterial.needsUpdate = true;
             this.textures.push(texture);
             if (!this.ready) this.zone.run(() => { this.ready = true; this.cd.markForCheck(); });
             if (this.motion?.matches) this.renderFrame?.(0);
-          }, undefined, () => { /* CSS poster fallback remains until an image loads. */ });
+          });
         });
       };
       this.buildPanels();
@@ -293,6 +354,7 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
   }
 
   private cleanup(): void {
+    this.panelGeneration++;
     cancelAnimationFrame(this.frame);
     clearTimeout(this.settleTimer);
     this.observer?.disconnect();
@@ -309,6 +371,7 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
     this.motion?.removeEventListener('change', this.onVisibility);
     this.geometries.forEach(geometry => geometry.dispose());
     this.materials.forEach(material => material.dispose());
+    this.pictureMaterials.forEach(material => material.dispose());
     this.textures.forEach(texture => texture.dispose());
     this.environment?.dispose();
     this.renderer?.dispose();

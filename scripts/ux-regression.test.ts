@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildEmbedUrl } from '../src/app/features/movie/movie-player/embed-url';
 import { nearestReelPhase, reelPose } from '../src/app/shared/components/cinema-atmosphere/reel-motion';
+import { loadReelArtwork, reelArtworkUrls } from '../src/app/shared/components/cinema-atmosphere/reel-artwork';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TMDBService } from '../src/app/core/services/tmdb.service';
@@ -18,6 +19,56 @@ import { ListManagerComponent } from '../src/app/features/lists/list-manager/lis
 import { MovieDetailComponent } from '../src/app/features/movie/movie-detail/movie-detail.component';
 
 const film = (id: number, type = 'movie') => ({ id, title: 'Film ' + id, media_type: type, backdrop_path: '/art.jpg', poster_path: '/poster.jpg', vote_average: 8, release_date: '2025-01-01', overview: 'A story.' });
+
+test('reel artwork retries a smaller poster and then alternate artwork after failures', async () => {
+  const urls = reelArtworkUrls(film(1) as any);
+  assert.equal(urls.length, 3);
+  assert.match(urls[1], /w342\/poster.jpg\?reel=1/);
+  const requested: string[] = [];
+  const texture = { dispose() { assert.fail('The successful texture must stay alive'); } };
+  const result = await loadReelArtwork(urls, {
+    load(url, loaded, _progress, failed) {
+      requested.push(url);
+      if (url.includes('/art.jpg')) loaded(texture); else failed();
+    }
+  }, () => true);
+  assert.equal(result, texture);
+  assert.deepEqual(requested, urls);
+  assert.deepEqual(reelArtworkUrls({ ...film(1), poster_path: null } as any), [urls[2]]);
+});
+
+test('stalled reel images fall through and late textures are disposed', async () => {
+  let late: ((value: { dispose(): void }) => void) | undefined;
+  let disposed = 0;
+  const replacement = { dispose() {} };
+  const result = await loadReelArtwork(['stalled', 'replacement'], {
+    load(url, loaded) { if (url === 'stalled') late = loaded; else loaded(replacement); }
+  }, () => true, 5);
+  assert.equal(result, replacement);
+  late!({ dispose() { disposed++; } });
+  assert.equal(disposed, 1);
+});
+
+test('replaced reels discard old textures without starting further image requests', async () => {
+  let current = true;
+  let disposed = 0;
+  const requested: string[] = [];
+  const result = await loadReelArtwork(['old', 'retry'], {
+    load(url, loaded) {
+      requested.push(url);
+      current = false;
+      loaded({ dispose() { disposed++; } });
+    }
+  }, () => current);
+  assert.equal(result, undefined);
+  assert.equal(disposed, 1);
+  assert.deepEqual(requested, ['old']);
+});
+
+test('unavailable artwork resolves to the existing title card without an unhandled rejection', async () => {
+  assert.equal(await loadReelArtwork(['missing'], { load() { throw new Error('Network unavailable'); } }, () => true), undefined);
+  assert.equal(await loadReelArtwork([], { load() { assert.fail('No URL to load'); } }, () => true), undefined);
+});
 function fixture(overrides = {}) {
   const params = new BehaviorSubject<Record<string, string>>({});
   const user = { favoriteMovieIds: [] as number[] };
