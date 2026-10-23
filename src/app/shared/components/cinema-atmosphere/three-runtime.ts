@@ -1,6 +1,6 @@
 export {
   WebGLRenderer, Scene, PerspectiveCamera, Group, Mesh, PlaneGeometry, BoxGeometry,
-  TorusGeometry, MeshStandardMaterial, MeshBasicMaterial, ShaderMaterial,
+  MeshStandardMaterial, MeshBasicMaterial, ShaderMaterial,
   TextureLoader, CanvasTexture, SRGBColorSpace, ACESFilmicToneMapping, HemisphereLight,
   DirectionalLight, PMREMGenerator
 } from 'three';

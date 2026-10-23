@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, PLATFORM_ID, SimpleChanges } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import type { WebGLRenderer, Group, Mesh, Material, BufferGeometry, Texture, PerspectiveCamera, Scene, WebGLRenderTarget } from 'three';
+import type { WebGLRenderer, Group, Material, BufferGeometry, Texture, PerspectiveCamera, Scene, WebGLRenderTarget } from 'three';
 import { nearestReelPhase, reelPose } from './reel-motion';
 import { Movie } from '../../../core/models/movie.model';
 import { loadReelArtwork, reelArtworkUrls } from './reel-artwork';
@@ -37,7 +37,6 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
   private camera?: PerspectiveCamera;
   private reel?: Group;
   private panels: Group[] = [];
-  private metalRings: Mesh[] = [];
   private geometries: BufferGeometry[] = [];
   private materials: Material[] = [];
   private textures: Texture[] = [];
@@ -288,17 +287,6 @@ export class CinemaAtmosphereComponent implements AfterViewInit, OnChanges, OnDe
         });
       };
       this.buildPanels();
-
-      // Thin elliptical tracks connect the frames into one sculptural film reel.
-      const ringGeometry = new T.TorusGeometry(3.8, .025, 8, 140);
-      this.geometries.push(ringGeometry);
-      for (let i = 0; i < 2; i++) {
-        const ring = new T.Mesh(ringGeometry, metal);
-        ring.rotation.set(.8 + i * .14, .22, -.35);
-        ring.position.set(0, -.1, -1.8 - i * .15);
-        this.reel.add(ring);
-        this.metalRings.push(ring);
-      }
 
       const resize = () => {
         if (!this.renderer || !this.camera) return;
