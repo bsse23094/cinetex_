@@ -1,0 +1,1 @@
+var e={production:!1,tmdbApiKey:"730a266a75adf9bc45a21ae25a7efeff",tmdbBaseUrl:"https://api.themoviedb.org/3",supabaseUrl:"https://mqlabpicrpumgiqfqcvc.supabase.co",supabasePublishableKey:"sb_publishable_FXUx90ZVtlgrlJn7xFS5Vw_LIaniD4a",embedBaseUrl:"https://vidsrc.sh",embedFallbackBaseUrls:["https://vsembed.ru"]};export{e as a};

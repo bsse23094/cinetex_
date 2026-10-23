@@ -1,0 +1,1 @@
+import{Q as s}from"./chunk-7SYJKFJ3.js";var e=class i{transform(r,t="w780"){if(!r)return"assets/no-poster.svg";if(r.startsWith("http://")||r.startsWith("https://"))return r;let n=r.startsWith("/")?r:`/${r}`;return`https://image.tmdb.org/t/p/${t}${n}`}static \u0275fac=function(t){return new(t||i)};static \u0275pipe=s({name:"backdropUrl",type:i,pure:!0})};export{e as a};
