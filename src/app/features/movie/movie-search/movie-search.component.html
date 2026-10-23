@@ -1,164 +1,112 @@
 <section class="cinema-page">
-  <div class="hero-section skeleton skeleton-hero" *ngIf="!query && !featuredMovie && loading"></div>
+  <section class="hero-section skeleton skeleton-hero" *ngIf="!query && !featuredMovie && discoveryLoading" aria-label="Loading featured film" aria-busy="true"></section>
 
-  <section class="hero-section cinema-hero" *ngIf="!query && featuredMovie">
-    <div class="hero-bg">
-      <img [src]="featuredMovie.backdrop_path | backdropUrl" [alt]="featuredMovie.title + ' artwork'" fetchpriority="high" decoding="async">
-    </div>
-    <div class="hero-grid" aria-hidden="true"></div>
+  <section class="hero-section cinema-hero" *ngIf="!query && featuredMovie" aria-label="Featured films">
+    <div class="hero-bg"><img [src]="featuredMovie.backdrop_path | backdropUrl" alt="" fetchpriority="high" decoding="async"></div>
     <div class="hero-overlay"></div>
-    <div class="hero-corner-mark" aria-hidden="true">01</div>
-    <div class="hero-edge-label" aria-hidden="true"><span>C / SELECT 001</span><span>THE FEATURED FRAME</span></div>
     <div class="hero-content">
-      <div class="hero-kicker" data-hero-reveal>
-        <span><i class="fas fa-circle"></i> now screening</span>
-        <span>cinetex / select</span>
+      <h1 class="hero-manifesto"><span class="title-mask"><span data-hero-reveal>cinema,</span></span><span class="title-mask"><em data-hero-reveal>off script.</em></span></h1>
+      <div class="featured-copy" #featuredCopy>
+        <h2 class="featured-title">{{ getTitle(featuredMovie) }}</h2>
+        <div class="hero-meta"><span>{{ getReleaseDate(featuredMovie) | date:'yyyy' }}</span><span class="hero-score"><i class="fas fa-star" aria-hidden="true"></i> {{ featuredMovie.vote_average | number:'1.1-1' }} / 10</span><span>Feature film</span></div>
+        <p class="hero-desc">{{ featuredMovie.overview }}</p>
+        <div class="hero-actions">
+          <button class="btn-primary" appMagnetic (click)="watchMedia(featuredMovie)"><span>Enter the story</span><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+          <a class="hero-detail-link" [routerLink]="['/movie',featuredMovie.id]">Explore film <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+          <button class="save-button" (click)="addToFavorites(featuredMovie)" [attr.aria-pressed]="isFeaturedFavorite" [attr.aria-label]="isFeaturedFavorite ? 'Remove from favorites' : 'Save to favorites'"><i class="fas" [class.fa-check]="isFeaturedFavorite" [class.fa-plus]="!isFeaturedFavorite" aria-hidden="true"></i></button>
+        </div>
       </div>
-      <h1 class="hero-title" data-hero-reveal>{{ featuredMovie.title }}</h1>
-      <div class="hero-meta" data-hero-reveal>
-        <span class="match-score">{{ (featuredMovie.vote_average * 10) | number:'1.0-0' }}% match</span>
-        <span>{{ featuredMovie.release_date | date:'yyyy' }}</span>
-        <span>feature film</span>
-      </div>
-      <p class="hero-desc" data-hero-reveal>{{ featuredMovie.overview }}</p>
-      <div class="hero-actions" data-hero-reveal>
-        <button class="btn-primary" (click)="playMovie(featuredMovie)"><i class="fas fa-play"></i> start watching</button>
-        <button type="button" class="hero-detail-link" (click)="router.navigate(['/movie', featuredMovie.id])">Explore the title <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
-        <button class="btn-secondary" (click)="addToFavorites(featuredMovie)" [attr.aria-label]="isFeaturedFavorite ? 'Remove from favorites' : 'Add to favorites'">
-          <i class="fas fa-heart" *ngIf="isFeaturedFavorite"></i><i class="far fa-heart" *ngIf="!isFeaturedFavorite"></i>
+    </div>
+    <div class="hero-reel"><app-cinema-atmosphere [films]="featuredChoices" [selectedIndex]="featuredIndex" (selectFilm)="selectFeatured($event)"></app-cinema-atmosphere></div>
+    <div class="hero-bottom">
+      <a class="hero-scroll" href="#discover" aria-label="Browse films"><span class="scroll-orbit"><i class="fas fa-arrow-down" aria-hidden="true"></i></span></a>
+      <div class="feature-selector" role="group" aria-label="Choose a featured film">
+        <button *ngFor="let film of featuredChoices; let i = index" (click)="selectFeatured(i)" [class.active]="featuredMovie.id === film.id" [attr.aria-pressed]="featuredMovie.id === film.id" [attr.aria-label]="'Feature ' + getTitle(film)">
+          <span class="feature-number">0{{ i + 1 }}</span><span class="feature-name">{{ getTitle(film) }}</span><span class="feature-line"></span>
         </button>
       </div>
     </div>
-    <div class="hero-footer-line" aria-hidden="true"><span>scroll to explore</span><i class="fas fa-arrow-down"></i></div>
   </section>
 
-  <section class="home-statement" *ngIf="!query && !loading" data-reveal>
-    <span class="statement-index">C/001</span>
-    <p>Every great night starts with a <em>better</em> story.</p>
-    <span class="statement-caption">Your personal film index</span>
-  </section>
+  <div class="cinema-marquee" *ngIf="!query && !discoveryLoading" aria-hidden="true"><div class="marquee-track"><span>GOOD FILMS. <em>Great obsessions.</em> <b>&#10035;</b> CINEMA WITHOUT LIMITS. <b>&#10035;</b></span><span>GOOD FILMS. <em>Great obsessions.</em> <b>&#10035;</b> CINEMA WITHOUT LIMITS. <b>&#10035;</b></span></div></div>
 
-  <section class="mood-section" *ngIf="!query && !loading && moodFeature as moodMovie" data-reveal aria-labelledby="mood-title">
-    <div class="mood-intro">
-      <span class="mood-index">The evening edit / 001</span>
-      <h2 id="mood-title">Start with<br><em>a feeling.</em></h2>
-      <p>Three ways into the archive. Pick the atmosphere; we’ll find the first frame.</p>
-      <div class="mood-switch" role="group" aria-label="Choose a viewing mood">
-        <button type="button" *ngFor="let mood of moodOptions" [class.active]="activeMood === mood.key" [disabled]="!moodAvailable(mood.key)" [attr.aria-pressed]="activeMood === mood.key" (click)="setMood(mood.key)">
-          <span>{{ mood.number }}</span>{{ mood.label }}
-        </button>
-      </div>
+  <div class="discovery-error" *ngIf="!query && discoveryError" role="alert">
+    <span class="section-tag">A brief intermission</span><h1>The films couldn't load.</h1><p>Check your connection and try again.</p><button class="btn-primary" (click)="loadRecommendedContent()">Try again</button>
+  </div>
+
+  <div id="discover" class="discovery-toolbar" *ngIf="!query && !discoveryLoading && !discoveryError">
+    <div><h2>Find your <em>next obsession.</em></h2></div>
+    <div class="browse-tabs" role="group" aria-label="Browse by format">
+      <button *ngFor="let category of browseCategories" [class.active]="browseCategory === category.key" [attr.aria-pressed]="browseCategory === category.key" (click)="browseCategory = category.key">{{ category.label }}</button>
     </div>
-    <div class="mood-feature" aria-live="polite">
-      <div class="mood-art" aria-hidden="true">
-        <img class="mood-backdrop" [src]="moodMovie.backdrop_path | backdropUrl:'w1280'" alt="" loading="lazy" decoding="async">
-        <span class="mood-art-vignette"></span>
-        <img class="mood-poster" [src]="moodMovie.poster_path | posterUrl:'w500'" alt="" loading="lazy" decoding="async">
-      </div>
-      <div class="mood-feature-copy">
-        <span class="mood-feature-kicker"><i class="fas fa-circle" aria-hidden="true"></i> Cinetex selects / {{ moodLabel }}</span>
-        <h3>{{ getTitle(moodMovie) }}</h3>
-        <div class="mood-feature-meta">
-          <span>{{ getReleaseDate(moodMovie) | date:'yyyy' }}</span>
-          <span>{{ getMediaType(moodMovie) === 'tv' ? 'Series' : 'Film' }}</span>
-          <span><i class="fas fa-star" aria-hidden="true"></i> {{ moodMovie.vote_average | number:'1.1-1' }}</span>
-        </div>
-        <p>{{ moodNote }}</p>
-        <button type="button" class="mood-watch" (click)="watchMedia(moodMovie)"><i class="fas fa-play" aria-hidden="true"></i> Watch this pick <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
-      </div>
-    </div>
-  </section>
+  </div>
 
-  <div class="content-rows cinema-rows" *ngIf="!query && !loading">
-    <section class="slider-row" *ngFor="let row of contentRows; let rowIndex = index; trackBy: trackRow" [hidden]="!row.movies.length" data-reveal-row>
-      <div class="row-header-with-nav row-heading">
-        <span class="row-number" aria-hidden="true">{{ rowIndex + 1 < 10 ? '0' + (rowIndex + 1) : rowIndex + 1 }}</span>
-        <div class="row-header-copy">
-          <span class="row-eyebrow">{{ row.eyebrow }}</span>
-          <h2 class="row-title">{{ row.title }}</h2>
-        </div>
-        <span class="row-count">{{ row.movies.length }} titles</span>
-        <div class="slider-nav-arrows">
-          <button type="button" class="nav-arrow prev" (click)="scrollSliderLeft($event)" [attr.aria-label]="'Previous ' + row.title + ' titles'" [attr.aria-controls]="'slider-' + rowIndex"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
-          <button type="button" class="nav-arrow next" (click)="scrollSliderRight($event)" [attr.aria-label]="'Next ' + row.title + ' titles'" [attr.aria-controls]="'slider-' + rowIndex"><i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+  <div class="content-rows cinema-rows" *ngIf="!query && !discoveryLoading">
+    <section appFilmRail #rail="filmRail" class="slider-row" [class.landscape-row]="rowIndex === 0" *ngFor="let row of contentRows; let rowIndex = index; trackBy: trackRow" data-reveal-row>
+      <div class="row-heading">
+        <span class="row-index" aria-hidden="true">0{{ rowIndex + 1 }}</span><div class="row-header-copy"><h2 class="row-title">{{ row.title }}</h2></div>
+        <div class="slider-nav-arrows"><span class="rail-count" aria-hidden="true">{{ rail.range }}</span>
+          <button class="nav-arrow" (click)="rail.previous()" [disabled]="rail.atStart" [attr.aria-label]="'Previous ' + row.title + ' titles'" [attr.aria-controls]="'slider-' + rowIndex"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
+          <button class="nav-arrow" (click)="rail.next()" [disabled]="rail.atEnd" [attr.aria-label]="'Next ' + row.title + ' titles'" [attr.aria-controls]="'slider-' + rowIndex"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14m-7-7 7 7-7 7" /></svg></button>
         </div>
       </div>
-      <button class="slider-arrow slider-arrow-left" (click)="scrollSliderLeft($event)" aria-label="Previous titles"><i class="fas fa-arrow-left"></i></button>
-      <div class="slider-container" [id]="'slider-' + rowIndex" [attr.aria-label]="row.title + ' titles'" tabindex="0">
+      <div class="slider-container" data-slider-track [id]="'slider-' + rowIndex" [attr.aria-label]="row.title + ' titles'" tabindex="0">
         <div class="slider-track">
-          <article class="movie-card" *ngFor="let movie of row.movies" (click)="watchMedia(movie)" (keydown.enter)="watchMedia(movie)" (keydown.space)="$event.preventDefault(); watchMedia(movie)" role="button" tabindex="0" [attr.aria-label]="'Watch ' + getTitle(movie)" (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
+          <button class="movie-card" data-slider-item appCinemaHover *ngFor="let movie of row.movies; let cardIndex = index" (click)="watchMedia(movie)" [attr.aria-label]="'Watch ' + getTitle(movie)">
             <div class="poster-container">
-              <img [src]="movie.backdrop_path | backdropUrl" [alt]="getTitle(movie)" [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'" loading="lazy" decoding="async">
-              <span class="card-index">{{ getReleaseDate(movie) | date:'yyyy' }}</span>
-              <div class="card-overlay"><div class="play-btn-small"><i class="fas fa-play"></i></div></div>
+              <img [src]="rowIndex === 0 && movie.backdrop_path ? (movie.backdrop_path | backdropUrl) : (movie.poster_path | posterUrl:'w500')" [alt]="getTitle(movie)" loading="lazy" decoding="async">
+              <span class="card-format">{{ getMediaType(movie) === 'tv' ? 'Series' : 'Film' }}</span>
+              <span class="card-overlay"><span class="play-btn-small"><i class="fas fa-play" aria-hidden="true"></i></span></span>
             </div>
-            <div class="card-info">
-              <div class="card-title">{{ getTitle(movie) }}</div>
-              <div class="card-meta"><span>{{ getMediaType(movie) === 'tv' ? 'series' : 'film' }}</span><span><i class="fas fa-star"></i> {{ movie.vote_average | number:'1.1-1' }}</span></div>
-            </div>
-          </article>
+            <div class="card-info"><span class="card-count" aria-hidden="true">{{ cardIndex + 1 < 10 ? '0' + (cardIndex + 1) : cardIndex + 1 }}</span><h3 class="card-title">{{ getTitle(movie) }}</h3><div class="card-meta"><span>{{ getReleaseDate(movie) | date:'yyyy' }}</span><span><i class="fas fa-star" aria-hidden="true"></i> {{ movie.vote_average | number:'1.1-1' }}</span></div></div>
+          </button>
         </div>
       </div>
-      <button class="slider-arrow slider-arrow-right" (click)="scrollSliderRight($event)" aria-label="Next titles"><i class="fas fa-arrow-right"></i></button>
+      <div class="rail-progress" aria-hidden="true"><span [style.width.%]="15 + rail.progress * 85"></span></div>
     </section>
   </div>
 
-  <section class="search-results-page cinema-results" *ngIf="query">
-    <header class="search-head" data-reveal>
-      <div class="search-head-copy">
-        <span class="section-tag">C / Archive search</span>
-        <h1>Find the<br><em>next frame.</em></h1>
-        <p>Showing results for <strong>“{{ query }}”</strong></p>
+  <section class="mood-section" *ngIf="!query && !discoveryLoading && moodFeature as moodMovie" data-reveal aria-labelledby="mood-title">
+    <div class="mood-intro">
+      <h2 id="mood-title">Follow<br><em>the feeling.</em></h2>
+      <p>For the restless. The romantics. The just-one-more-scene people.</p>
+      <div class="mood-switch" role="group" aria-label="Choose a viewing mood">
+        <button *ngFor="let mood of moodOptions" [class.active]="activeMood === mood.key" [disabled]="!moodAvailable(mood.key)" [attr.aria-pressed]="activeMood === mood.key" (click)="setMood(mood.key)">{{ mood.label }}<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
       </div>
-      <form class="search-page-form" role="search" (ngSubmit)="submitSearch()">
-        <label for="archive-search">Search the archive</label>
-        <div class="search-page-field">
-          <i class="fas fa-search" aria-hidden="true"></i>
-          <input id="archive-search" name="archiveSearch" type="search" [(ngModel)]="searchDraft" placeholder="Title, person, or genre" autocomplete="off">
-          <button type="submit" aria-label="Search archive"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
-        </div>
-      </form>
-    </header>
-    <div class="results-header-compact" data-reveal *ngIf="!loading">
-      <span class="explore-label">Refine the selection</span>
-      <div class="explore-tags">
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'all'" [attr.aria-pressed]="activeFilter === 'all'" (click)="filterResults('all')">All</button>
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'movie'" [attr.aria-pressed]="activeFilter === 'movie'" (click)="filterResults('movie')">Films</button>
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'tv'" [attr.aria-pressed]="activeFilter === 'tv'" (click)="filterResults('tv')">Series</button>
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'action'" [attr.aria-pressed]="activeFilter === 'action'" (click)="filterByGenre(28)">Action</button>
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'comedy'" [attr.aria-pressed]="activeFilter === 'comedy'" (click)="filterByGenre(35)">Comedy</button>
-        <button type="button" class="explore-tag" [class.active]="activeFilter === 'drama'" [attr.aria-pressed]="activeFilter === 'drama'" (click)="filterByGenre(18)">Drama</button>
-      </div>
-      <span class="result-total" aria-live="polite">{{ results.length }} {{ results.length === 1 ? 'title' : 'titles' }}</span>
     </div>
-    <div class="search-loading" *ngIf="loading" role="status">Searching the archive<span class="search-loading-line" aria-hidden="true"></span></div>
-    <div class="compact-results-grid" *ngIf="results.length" data-reveal>
-      <article class="compact-card" *ngFor="let movie of results; let i = index" (click)="watchMedia(movie)" (keydown.enter)="watchMedia(movie)" (keydown.space)="$event.preventDefault(); watchMedia(movie)" role="button" tabindex="0" [attr.aria-label]="'Watch ' + getTitle(movie)" (mouseenter)="onMouseEnter(movie, $event)" (mouseleave)="onMouseLeave()">
-        <img [src]="movie.backdrop_path | backdropUrl" [alt]="getTitle(movie)" [style.object-fit]="movie.backdrop_path ? 'cover' : 'contain'" loading="lazy" decoding="async">
-        <div class="compact-card-overlay">
-          <span class="compact-card-index">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }} / {{ getMediaType(movie) === 'tv' ? 'series' : 'film' }}</span>
-          <div class="compact-card-content">
-            <div class="compact-card-title">{{ getTitle(movie) }}</div>
-            <p class="compact-card-summary" *ngIf="i === 0">{{ movie.overview }}</p>
-            <div class="compact-card-meta"><span>{{ getReleaseDate(movie) | date:'yyyy' }}</span><span><i class="fas fa-star" aria-hidden="true"></i> {{ movie.vote_average | number:'1.1-1' }}</span></div>
-          </div>
-          <span class="compact-card-open" aria-hidden="true"><i class="fas fa-play"></i></span>
-        </div>
-      </article>
-    </div>
-    <div *ngIf="results.length === 0 && !loading" class="empty-results" data-reveal>
-      <span class="empty-index">C / No matches</span><h3>Nothing in this cut.</h3><p>Try another title or a broader search term.</p>
-      <button class="browse-btn" (click)="router.navigate(['/search'])"><i class="fas fa-arrow-left"></i> Back to discovery</button>
+    <div class="mood-feature" aria-live="polite">
+      <img class="mood-backdrop" [src]="moodMovie.backdrop_path | backdropUrl:'w1280'" alt="" loading="lazy">
+      <div class="mood-feature-copy"><span class="mood-feature-kicker">{{ moodLabel }} / {{ getReleaseDate(moodMovie) | date:'yyyy' }}</span><h3>{{ getTitle(moodMovie) }}</h3><p>{{ moodNote }}</p><button class="mood-watch" (click)="watchMedia(moodMovie)"><i class="fas fa-play" aria-hidden="true"></i> Watch this pick</button></div>
     </div>
   </section>
 
-  <div *ngIf="showListPrompt" class="modal-overlay">
-    <div class="modal-content cinema-modal">
-      <span class="section-tag">Personal index</span><h3>Add to a list</h3>
-      <div *ngIf="userLists.length" class="list-options"><label *ngFor="let list of userLists"><input type="checkbox" [value]="list.id" [(ngModel)]="selectedListIds"> {{ list.title }}</label></div>
-      <input [(ngModel)]="newListTitle" placeholder="Name a new list">
-      <div class="modal-actions"><button class="btn-primary" (click)="userLists.length && !newListTitle ? confirmAddToList() : addNewListInline()">{{ newListTitle ? 'Create & add' : 'Add selected' }}</button><button class="btn-secondary" (click)="cancelAddToList()">cancel</button></div>
+  <section class="search-results-page" *ngIf="query">
+    <header class="search-head">
+      <div class="search-art" aria-hidden="true"><img *ngIf="allResults[0]?.backdrop_path && !loading" [src]="allResults[0].backdrop_path | backdropUrl:'w1280'" alt=""></div>
+      <a class="search-back" routerLink="/search"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to discovery</a><div class="search-title-copy"><span class="search-eyebrow">The film index</span><h1><em>{{ query }}</em><span class="search-period" aria-hidden="true">.</span></h1></div>
+      <form class="search-page-form" role="search" (ngSubmit)="submitSearch()">
+        <label for="archive-search">Find a film, series, or filmmaker</label>
+        <div class="search-page-field"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="archive-search" #archiveInput name="archiveSearch" type="search" [(ngModel)]="searchDraft" placeholder="A title, an actor, a director..." autocomplete="off"><button *ngIf="searchDraft" class="clear-search" type="button" (click)="searchDraft = ''; archiveInput.focus()" aria-label="Clear search"><i class="fas fa-times" aria-hidden="true"></i></button><button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></button></div>
+      </form>
+    </header>
+    <div class="results-toolbar" *ngIf="!loading">
+      <div class="explore-tags" role="group" aria-label="Filter search results">
+        <button *ngFor="let filter of searchFilters" [class.active]="activeFilter === filter.key" [attr.aria-pressed]="activeFilter === filter.key" (click)="filterResults(filter.key)">{{ filter.label }} <span class="filter-count">{{ filterCount(filter.key) }}</span></button>
+      </div>
+      <div class="results-summary"><div class="result-display-controls"><div class="result-view-switch" role="group" aria-label="Result layout"><button (click)="resultsView = 'posters'" [attr.aria-pressed]="resultsView === 'posters'" aria-label="Poster view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg></button><button (click)="resultsView = 'list'" [attr.aria-pressed]="resultsView === 'list'" aria-label="Detailed list view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M3 6h2M3 12h2M3 18h2"/></svg></button></div><label class="sort-control">Sort by <select [(ngModel)]="sortOrder" (ngModelChange)="sortResults()"><option value="relevance">Relevance</option><option value="rating">Top rated</option><option value="recent">Newest first</option></select></label></div><span class="result-total" aria-live="polite">{{ results.length }} {{ results.length === 1 ? 'result' : 'results' }}</span></div>
     </div>
-  </div>
-  <app-movie-hover-card *ngIf="hoveredMovie" [movie]="hoveredMovie" [position]="hoverCardPosition" [containerWidth]="containerWidth" (mouseenter)="keepHoverOpen()" (mouseleave)="closeHover()" (close)="closeHover()" (play)="watchMedia(hoveredMovie!)" (addToList)="addToListPrompt(hoveredMovie!)" (rate)="rateMovie(hoveredMovie!)"></app-movie-hover-card>
+    <div class="search-loading" *ngIf="loading" role="status"><span class="spinner"></span> Searching the film index...</div><div class="search-grid loading-grid" *ngIf="loading" aria-hidden="true"><div class="skeleton search-skeleton" *ngFor="let item of [1,2,3,4,5]"></div></div>
+    <div class="search-grid" [class.search-list]="resultsView === 'list'" *ngIf="results.length && !loading">
+      <button class="movie-card" appCinemaHover *ngFor="let movie of results; let resultIndex = index; trackBy: trackMedia" [style.--result-index]="resultIndex" (click)="watchMedia(movie)" [attr.aria-label]="'Watch ' + getTitle(movie)">
+        <div class="poster-container"><img [src]="movie.poster_path | posterUrl:'w500'" [alt]="getTitle(movie)" loading="lazy"><span class="card-format">{{ getMediaType(movie) === 'tv' ? 'Series' : 'Film' }}</span><span class="card-overlay"><span class="play-btn-small"><i class="fas fa-play" aria-hidden="true"></i></span></span></div>
+        <div class="card-info"><span class="result-index" aria-hidden="true">{{ resultIndex + 1 < 10 ? '0' + (resultIndex + 1) : resultIndex + 1 }}</span><h2 class="card-title">{{ getTitle(movie) }}</h2><div class="card-meta"><span>{{ getReleaseDate(movie) | date:'yyyy' }}</span><span><i class="fas fa-star" aria-hidden="true"></i> {{ movie.vote_average | number:'1.1-1' }}</span></div><p class="result-overview">{{ movie.overview }}</p><span class="result-watch">Watch {{ getMediaType(movie) === 'tv' ? 'series' : 'film' }} <span aria-hidden="true">&#8599;</span></span></div>
+      </button>
+    </div>
+    <div *ngIf="results.length === 0 && !loading" class="empty-results">
+      <span class="section-tag">{{ searchError ? 'A brief intermission' : 'No matches this time' }}</span><h3>{{ searchError ? 'Search is taking a break.' : 'Let’s try another story.' }}</h3><p>{{ searchError ? 'Check your connection and try again.' : 'Try a different title or choose another filter.' }}</p>
+      <button *ngIf="searchError" class="btn-primary" (click)="search()">Try again</button>
+      <a *ngIf="!searchError" class="browse-btn" routerLink="/search">Back to discovery <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </div>
+  </section>
+  <div class="save-feedback" *ngIf="feedback" role="status"><i class="fas fa-check" aria-hidden="true"></i>{{ feedback }}</div>
 </section>

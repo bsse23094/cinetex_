@@ -17,6 +17,8 @@ import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 })
 export class MovieDetailComponent implements OnInit {
   movie! : MovieDetails;
+  loading = true;
+  loadError = false;
   userRating: number = 0;
   isFavorite: boolean = false;
 
@@ -36,20 +38,15 @@ export class MovieDetailComponent implements OnInit {
   }
 
   private loadMovie(id: number) {
-    this.tmdb.getMovieDetails(id).subscribe((data: any) => {
-      this.movie = data;
-      this.setBackdropImage(data.backdrop_path || data.poster_path);
+    this.loading = true;
+    this.loadError = false;
+    this.tmdb.getMovieDetails(id).subscribe({
+      next: (data: any) => { this.movie = data; this.loading = false; },
+      error: () => { this.loading = false; this.loadError = true; }
     });
   }
 
-  private setBackdropImage(backdropPath: string | null): void {
-    if (backdropPath) {
-      const backdropUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
-      document.documentElement.style.setProperty('--detail-backdrop-image', `url('${backdropUrl}')`);
-    } else {
-      document.documentElement.style.setProperty('--detail-backdrop-image', 'none');
-    }
-  }
+  retry(): void { this.ngOnInit(); }
 
   playMovie() {
     if (this.movie) {
@@ -61,8 +58,7 @@ export class MovieDetailComponent implements OnInit {
     const ratings = this.storage.get<{[key: number] : number }>('ratings') || {};
     this.userRating = ratings[movieId] || 0;
 
-    const favorites = this.storage.get<any[]>('favorites') || [];
-    this.isFavorite = favorites.some(f => f.id === movieId);
+    this.isFavorite = !!this.storage.getCurrentUser()?.favoriteMovieIds?.includes(movieId);
   }
 
   onChangeRating(rating:number){
@@ -70,12 +66,13 @@ export class MovieDetailComponent implements OnInit {
     ratings[this.movie.id] = rating;
     this.storage.set('ratings', ratings);
     this.userRating = rating;
+    const movies = this.storage.getMovies();
+    if (!movies.some(movie => movie.id === this.movie.id)) this.storage.set('movies', [...movies, this.movie]);
   }
 
   toggleFavourite() {
-    // Use storage service method if available, or implement here
-    // The storage service seems to expect a Movie object, not just ID
-    this.storage.addMovieToFavorites(this.movie);
-    this.isFavorite = !this.isFavorite; // Optimistic update
+    if (this.isFavorite) this.storage.removeMovieFromFavorites(this.movie.id);
+    else this.storage.addMovieToFavorites(this.movie);
+    this.isFavorite = !this.isFavorite;
   }
 }

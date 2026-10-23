@@ -1,32 +1,19 @@
-import { MoviePlayerComponent } from './features/movie/movie-player/movie-player.component';
-// src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { MovieSearchComponent } from './features/movie/movie-search/movie-search.component';
-import { MovieDetailComponent } from './features/movie/movie-detail/movie-detail.component';
-import { ListManagerComponent } from './features/lists/list-manager/list-manager.component';
-import { FavoritesComponent } from './features/user/favorites/favorites.component';
-import { ListDetailComponent } from './features/lists/list-detail/list-detail.component';
-
-import { RatedMoviesComponent } from './features/user/rated-movies/rated-movies.component';
-import { AboutComponent } from './pages/about/about.component';
-import { PrivacyComponent } from './pages/privacy/privacy.component';
-import { TermsComponent } from './pages/terms/terms.component';
-import { AuthComponent } from './pages/auth/auth.component';
-import { ProfileComponent } from './features/user/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/search', pathMatch: 'full' },
-  { path: 'search', component: MovieSearchComponent },
-  { path: 'shows', component: MovieSearchComponent },
-  { path: 'movie/:id', component: MovieDetailComponent },
-  { path: 'lists', component: ListManagerComponent },
-  { path: 'favorites', component: FavoritesComponent },
-  { path: 'list/:id', component: ListDetailComponent },
-  { path: 'rated', component: RatedMoviesComponent },
-  { path: 'watch/:id', component: MoviePlayerComponent },
-  { path: 'about', component: AboutComponent },
-  { path: 'privacy', component: PrivacyComponent },
-  { path: 'terms', component: TermsComponent },
-  { path: 'auth', component: AuthComponent },
-  { path: 'profile', component: ProfileComponent }
+  { path: 'search', loadComponent: () => import('./features/movie/movie-search/movie-search.component').then(m => m.MovieSearchComponent) },
+  { path: 'shows', loadComponent: () => import('./features/movie/movie-search/movie-search.component').then(m => m.MovieSearchComponent) },
+  { path: 'movie/:id', loadComponent: () => import('./features/movie/movie-detail/movie-detail.component').then(m => m.MovieDetailComponent) },
+  { path: 'lists', loadComponent: () => import('./features/lists/list-manager/list-manager.component').then(m => m.ListManagerComponent) },
+  { path: 'favorites', loadComponent: () => import('./features/user/favorites/favorites.component').then(m => m.FavoritesComponent) },
+  { path: 'list/:id', loadComponent: () => import('./features/lists/list-detail/list-detail.component').then(m => m.ListDetailComponent) },
+  { path: 'rated', loadComponent: () => import('./features/user/rated-movies/rated-movies.component').then(m => m.RatedMoviesComponent) },
+  { path: 'watch/:id', loadComponent: () => import('./features/movie/movie-player/movie-player.component').then(m => m.MoviePlayerComponent) },
+  { path: 'about', loadComponent: () => import('./pages/about/about.component').then(m => m.AboutComponent) },
+  { path: 'privacy', loadComponent: () => import('./pages/privacy/privacy.component').then(m => m.PrivacyComponent) },
+  { path: 'terms', loadComponent: () => import('./pages/terms/terms.component').then(m => m.TermsComponent) },
+  { path: 'auth', loadComponent: () => import('./pages/auth/auth.component').then(m => m.AuthComponent) },
+  { path: 'profile', loadComponent: () => import('./features/user/profile/profile.component').then(m => m.ProfileComponent) },
+  { path: '**', redirectTo: '/search' }
 ];

@@ -5,16 +5,16 @@
         <i class="fas fa-heart"></i>
       </div>
       <div class="header-text">
-        <span class="page-eyebrow">Personal archive / 01</span>
-        <h1 class="page-title">your favorites</h1>
+        <span class="page-eyebrow">Your collection</span>
+        <h1 class="page-title">Your favorites</h1>
         <p class="page-subtitle">
-          <span class="count">{{ favoriteMovies.length }}</span> 
+          <span class="count">{{ favoriteMovies.length }}</span>
           {{ favoriteMovies.length === 1 ? 'movie' : 'movies' }} you love
         </p>
       </div>
     </div>
   </div>
-  
+
   <div class="favorites-grid" *ngIf="favoriteMovies.length; else noFavs">
     <article class="favorite-card" *ngFor="let movie of favoriteMovies" (click)="playMovie(movie)" (keydown.enter)="playMovie(movie)" (keydown.space)="$event.preventDefault(); playMovie(movie)" role="button" tabindex="0" [attr.aria-label]="'Watch ' + movie.title">
       <div class="card-poster">
@@ -38,14 +38,14 @@
       </div>
     </article>
   </div>
-  
+
   <ng-template #noFavs>
     <div class="empty-state">
       <div class="empty-icon">
         <i class="far fa-heart"></i>
       </div>
       <h3>No favorites yet</h3>
-      <p>Start adding movies to your favorites collection</p>
+      <p>Start adding movies to Your favorites collection</p>
       <button class="browse-btn" routerLink="/">
         <i class="fas fa-search"></i>
         Browse Movies

@@ -5,5 +5,6 @@ export const environment = {
     supabaseUrl: 'https://mqlabpicrpumgiqfqcvc.supabase.co',
     supabasePublishableKey: 'sb_publishable_FXUx90ZVtlgrlJn7xFS5Vw_LIaniD4a',
     // vidsrc-embed base URL for movie and TV playback
-    embedBaseUrl: 'https://vidsrc-embed.ru'
+    embedBaseUrl: 'https://vidsrc.sh',
+  embedFallbackBaseUrls: ['https://vsembed.ru']
 }

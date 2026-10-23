@@ -1,44 +1,21 @@
 <footer class="app-footer">
-  <section class="footer-cta">
-    <div>
-      <span class="footer-cta-kicker">C / End credits</span>
-      <h2>Stay for<br><em>another story.</em></h2>
-      <p>There is always something worth finding in the next frame.</p>
-    </div>
-    <a routerLink="/search" class="footer-cta-link">Explore the archive <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-  </section>
-
-  <div class="footer-container">
-    <div class="footer-grid">
-      <div class="footer-section footer-brand">
-        <div class="brand-header"><span class="brand-mark">C</span><span class="footer-logo">cinetex</span></div>
-        <p class="footer-tagline">A considered place for films, series, and anime worth spending time with.</p>
-        <span class="footer-system">Personal film index / always on</span>
-      </div>
-
-      <div class="footer-section">
-        <h3 class="footer-heading">Navigate</h3>
-        <ul class="footer-list">
-          <li><a routerLink="/search" class="footer-link"><span>01</span> Discover</a></li>
-          <li><a routerLink="/lists" class="footer-link"><span>02</span> My library</a></li>
-          <li><a routerLink="/favorites" class="footer-link"><span>03</span> Favorites</a></li>
-          <li><a routerLink="/rated" class="footer-link"><span>04</span> Rated titles</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section footer-index">
-        <span class="footer-index-number" aria-hidden="true">C<span>/</span></span>
-        <p>A place to return to.</p>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-divider"></div>
-      <div class="footer-bottom-content">
-        <div class="footer-copyright"><span>&copy; {{ currentYear }} Cinetex</span></div>
-        <span class="footer-edition">Films / series / anime</span>
-        <div class="footer-meta"><a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a><a href="#main-content" class="footer-top-link">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a></div>
-      </div>
-    </div>
+  <div class="footer-top">
+    <div><p>Great cinema.<br><em>No small feelings.</em></p></div>
+    <a routerLink="/search" class="footer-return" appMagnetic aria-label="Return to discovery"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i><span>ONE MORE<br>STORY</span></a>
+  </div>
+  <a class="footer-wordmark" routerLink="/search" aria-label="Cinetex home">
+    <svg viewBox="0 0 1095.36 195" role="presentation" aria-hidden="true">
+      <g class="wordmark-letter"><text x="12.00" y="155">c</text></g>
+      <g class="wordmark-letter"><text x="190.92" y="155">i</text></g>
+      <g class="wordmark-letter"><text x="256.44" y="155">n</text></g>
+      <g class="wordmark-letter"><text x="436.08" y="155">e</text></g>
+      <g class="wordmark-letter"><text x="615.00" y="155">t</text></g>
+      <g class="wordmark-letter"><text x="728.04" y="155">e</text></g>
+      <g class="wordmark-letter"><text x="906.96" y="155">x</text></g>
+    </svg>
+  </a>
+  <div class="footer-bottom">
+    <span>&copy; {{ currentYear }} cinetex</span>
+    <nav aria-label="Footer"><a routerLink="/about">About</a><a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a><a href="#main-content">Back to top &#8593;</a></nav>
   </div>
 </footer>

@@ -1,81 +1,44 @@
-<app-loading-screen *ngIf="isLoading"></app-loading-screen>
-
-<div class="app-container" [class.auth-shell]="isAuthRoute" *ngIf="!isLoading">
+<div class="app-container" [class.auth-shell]="isAuthRoute">
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <header class="app-header" [class.scrolled]="isScrolled" *ngIf="!isAuthRoute">
-    <a class="logo" routerLink="/search" aria-label="Cinetex home" (click)="closeMobileMenu()">
-      <span class="logo-mark">C</span>
-      <span class="logo-text">cinetex<small>film index</small></span>
-    </a>
-    <nav id="mobile-primary-navigation" class="nav-links" [class.mobile-open]="mobileMenuOpen" aria-label="Primary navigation">
-      <div class="mobile-menu-heading" *ngIf="mobileMenuOpen">
-        <span>Now screening</span>
-        <strong>Choose your next watch</strong>
-      </div>
-      <div class="mobile-search-container" *ngIf="mobileMenuOpen">
-        <div class="mobile-search-bar">
-          <i class="fas fa-search"></i>
-          <input type="search" placeholder="Search movies, shows..." aria-label="Search movies and shows" #mobileSearchInput (keyup.enter)="onSearch(mobileSearchInput.value); closeMobileMenu()">
-          <button type="button" class="search-btn" aria-label="Search" (click)="onSearch(mobileSearchInput.value); closeMobileMenu()">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-      </div>
-      <a routerLink="/search" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
-        <i class="fas fa-home"></i>
-        <span>home</span>
+  <button *ngIf="mobileMenuOpen" type="button" class="nav-backdrop" tabindex="-1" aria-label="Close navigation" (click)="closeMobileMenu()"></button>
+  <header class="app-header" [class.scrolled]="isScrolled" [class.menu-open]="mobileMenuOpen" *ngIf="!isAuthRoute">
+    <a class="logo" routerLink="/search" aria-label="Cinetex home" (click)="closeMobileMenu()"><span class="logo-text">cinetex</span><span class="logo-period" aria-hidden="true"></span></a>
+    <nav [appFocusTrap]="mobileMenuOpen" id="mobile-primary-navigation" class="nav-links" [class.mobile-open]="mobileMenuOpen" aria-label="Primary navigation" data-lenis-prevent>
+      <div class="mobile-menu-heading"><span>explore.</span><button type="button" class="mobile-menu-close" (click)="closeMobileMenu()" aria-label="Close menu"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div>
+      <a routerLink="/search" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored'}" class="nav-link" aria-label="Discover" (click)="closeMobileMenu()">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg><span class="nav-copy"><span>Discover</span></span><span class="mobile-nav-arrow" aria-hidden="true">&#8599;</span>
       </a>
-      <a routerLink="/lists" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-        <i class="fas fa-layer-group"></i>
-        <span>my library</span>
+      <a routerLink="/lists" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link" aria-label="Library" (click)="closeMobileMenu()">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="5" height="15" rx="1"/><path d="M12 5v15m4-16 4 15M3 9h5"/></svg><span class="nav-copy"><span>Library</span></span><span class="mobile-nav-arrow" aria-hidden="true">&#8599;</span>
       </a>
-      <a routerLink="/favorites" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-        <i class="fas fa-heart"></i>
-        <span>favorites</span>
+      <a routerLink="/favorites" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link" aria-label="Favorites" (click)="closeMobileMenu()">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg><span class="nav-copy"><span>Favorites</span></span><span class="mobile-nav-arrow" aria-hidden="true">&#8599;</span>
       </a>
-      <a routerLink="/rated" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
-        <i class="fas fa-star"></i>
-        <span>rated</span>
+      <a routerLink="/rated" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link" aria-label="Rated" (click)="closeMobileMenu()">
+        <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.5l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9L12 3Z"/></svg><span class="nav-copy"><span>Rated</span></span><span class="mobile-nav-arrow" aria-hidden="true">&#8599;</span>
       </a>
-      <a *ngIf="authUser; else mobileSignInLink" routerLink="/profile" routerLinkActive="active" class="nav-link mobile-account-link" (click)="closeMobileMenu()">
-        <span class="mobile-account-copy"><small>Signed in as</small>{{ profileName }}</span>
-        <span class="mobile-account-avatar" aria-hidden="true">{{ profileInitial }}</span>
-      </a>
-      <ng-template #mobileSignInLink>
-        <a routerLink="/auth" class="nav-link mobile-account-link" (click)="closeMobileMenu()">
-          <span class="mobile-account-copy"><small>Personalize Cinetex</small>Sign in</span>
-          <i class="fas fa-arrow-right" aria-hidden="true"></i>
-        </a>
-      </ng-template>
+      <a *ngIf="authUser; else mobileSignInLink" routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page" class="mobile-account-link" (click)="closeMobileMenu()"><span class="mobile-account-copy"><small>Your account</small>{{ profileName }}</span><span class="account-avatar" aria-hidden="true">{{ profileInitial }}</span></a>
+      <ng-template #mobileSignInLink><a routerLink="/auth" class="mobile-account-link" (click)="closeMobileMenu()"><span>Sign in</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></ng-template>
     </nav>
     <div class="header-right">
-      <a *ngIf="authUser; else signInLink" routerLink="/profile" class="account-link account-link-profile" (click)="closeMobileMenu()" [attr.aria-label]="'Open ' + profileName + '\'s profile'">
-        <span class="account-avatar" aria-hidden="true">{{ profileInitial }}</span>
-        <span>{{ profileName }}</span>
-      </a>
-      <ng-template #signInLink>
-        <a routerLink="/auth" class="account-link" (click)="closeMobileMenu()"><i class="far fa-user"></i><span>sign in</span></a>
-      </ng-template>
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="search" placeholder="Search titles" aria-label="Search movies and shows" #searchInput (keyup.enter)="onSearch(searchInput.value)">
+      <form class="header-search" role="search" (submit)="$event.preventDefault(); onSearch(headerSearch.value)">
+        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+        <input #headerSearch type="search" placeholder="Find a story..." aria-label="Search films, series, actors, or directors" autocomplete="off" maxlength="200" [value]="headerQuery">
         <kbd class="search-shortcut" aria-hidden="true">/</kbd>
-        <button type="button" class="search-btn" aria-label="Search" (click)="onSearch(searchInput.value)">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
-        </button>
-      </div>
-      <button type="button" class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen" aria-controls="mobile-primary-navigation" [attr.aria-expanded]="mobileMenuOpen" [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+      </form>
+      <a *ngIf="authUser; else signInLink" routerLink="/profile" class="account-link account-link-profile" (click)="closeMobileMenu()" [attr.aria-label]="'Open ' + profileName + '\'s profile'"><span class="account-avatar" aria-hidden="true">{{ profileInitial }}</span><span class="account-name">{{ profileName }}</span></a>
+      <ng-template #signInLink><a routerLink="/auth" class="account-link" (click)="closeMobileMenu()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span>Sign in</span></a></ng-template>
+      <button type="button" class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen" aria-controls="mobile-primary-navigation" [attr.aria-expanded]="mobileMenuOpen" [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"><span></span><span></span></button>
     </div>
   </header>
 
-  <main id="main-content" class="main-content" #mainContent>
+  <main [attr.inert]="mobileMenuOpen ? '' : null" id="main-content" class="main-content" #mainContent>
     <router-outlet></router-outlet>
   </main>
 
-  <app-footer *ngIf="!isAuthRoute"></app-footer>
-  <app-chatbot *ngIf="!isAuthRoute"></app-chatbot>
+  <app-footer [attr.inert]="mobileMenuOpen ? '' : null" *ngIf="!isAuthRoute"></app-footer>
+  @defer (on idle) {
+    <app-chatbot [hidden]="mobileMenuOpen" *ngIf="!isAuthRoute && !isPlayerRoute"></app-chatbot>
+  }
 </div>

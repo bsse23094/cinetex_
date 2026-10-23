@@ -9,14 +9,14 @@ export class TMDBService {
 
   searchMovies(query: string, page = 1) {
     return this.http.get(
-      `${environment.tmdbBaseUrl}/search/movie?api_key=${environment.tmdbApiKey}&query=${query}&page=${page}`
+      `${environment.tmdbBaseUrl}/search/movie?api_key=${environment.tmdbApiKey}&query=${encodeURIComponent(query)}&page=${page}`
     );
   }
 
   // Multi-search: searches across movies, TV shows, and people
   multiSearch(query: string, page = 1) {
     return this.http.get(
-      `${environment.tmdbBaseUrl}/search/multi?api_key=${environment.tmdbApiKey}&query=${query}&page=${page}`
+      `${environment.tmdbBaseUrl}/search/multi?api_key=${environment.tmdbApiKey}&query=${encodeURIComponent(query)}&page=${page}`
     );
   }
 
@@ -29,7 +29,7 @@ export class TMDBService {
   // TV endpoints
   searchTv(query: string, page = 1) {
     return this.http.get(
-      `${environment.tmdbBaseUrl}/search/tv?api_key=${environment.tmdbApiKey}&query=${query}&page=${page}`
+      `${environment.tmdbBaseUrl}/search/tv?api_key=${environment.tmdbApiKey}&query=${encodeURIComponent(query)}&page=${page}`
     );
   }
 

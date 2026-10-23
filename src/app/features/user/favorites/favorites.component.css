@@ -1,20 +1,3 @@
-/* Favorites Page with Blurred Backdrop */
 :host {
   display: block;
-  position: relative;
-  min-height: 100vh;
-}
-
-:host::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: var(--favorites-backdrop-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(25px) brightness(0.3);
-  transform: scale(1.1);
-  z-index: -1;
-  opacity: 0.5;
 }

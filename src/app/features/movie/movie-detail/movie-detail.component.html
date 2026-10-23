@@ -1,18 +1,20 @@
+<div *ngIf="loading" class="hero-section skeleton" role="status" aria-label="Loading film details"></div>
+<div *ngIf="loadError" class="empty-state" role="alert"><h1>This title couldn't load.</h1><p>Check your connection and try again.</p><button class="btn-primary" (click)="retry()">Try again</button></div>
 <section class="hero-section detail-hero" *ngIf="movie">
   <div class="hero-bg"><img [src]="movie.backdrop_path | backdropUrl" [alt]="movie.title + ' artwork'"></div>
   <div class="detail-grid" aria-hidden="true"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <span class="detail-kicker">Cinetex / title file</span>
+    <span class="detail-kicker">The collection</span>
     <h1 class="hero-title">{{ movie.title }}</h1>
     <div class="hero-meta">
-      <span class="match-score">{{ (movie.vote_average * 10) | number:'1.0-0' }}% Match</span>
+      <span class="match-score">{{ movie.vote_average | number:'1.1-1' }} / 10</span>
       <span>{{ movie.release_date | date:'yyyy' }}</span>
       <div class="genre-pills"><span class="genre-pill" *ngFor="let genre of movie.genres">{{ genre.name }}</span></div>
     </div>
     <p class="hero-desc">{{ movie.overview }}</p>
     <div class="hero-actions">
-      <button class="btn-primary" (click)="playMovie()"><i class="fas fa-play"></i> Start watching</button>
+      <button class="btn-primary" (click)="playMovie()"><i class="fas fa-play"></i> Watch film</button>
       <button class="btn-secondary" (click)="toggleFavourite()" [class.text-accent]="isFavorite" [attr.aria-label]="isFavorite ? 'Remove from favorites' : 'Add to favorites'">
         <i class="fas fa-heart" *ngIf="isFavorite"></i><i class="far fa-heart" *ngIf="!isFavorite"></i>
       </button>

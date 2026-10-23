@@ -1,7 +1,7 @@
 
 
 
-import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -17,42 +17,21 @@ import { StorageService } from '../../../core/services/storage.service';
 })
 export class ListManagerComponent implements OnInit {
   lists: MovieList[] = [];
-  newListId = '';
   newListTitle = '';
 
   constructor(
-    private storage: StorageService,
-    private renderer: Renderer2,
-    private el: ElementRef
+    private storage: StorageService
   ) {}
 
   ngOnInit() {
     this.lists = this.storage.getLists();
-    this.setBackdropImage();
-  }
-
-  setBackdropImage() {
-    const allMovies = this.storage.getMovies();
-    if (allMovies && allMovies.length > 0) {
-      const randomMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
-      if (randomMovie.backdrop_path) {
-        const backdropUrl = randomMovie.backdrop_path.startsWith('http')
-          ? randomMovie.backdrop_path
-          : `https://image.tmdb.org/t/p/original${randomMovie.backdrop_path}`;
-        this.renderer.setStyle(
-          this.el.nativeElement,
-          '--library-backdrop-image',
-          `url(${backdropUrl})`
-        );
-      }
-    }
   }
 
   addList() {
-    if (!this.newListId.trim() || !this.newListTitle.trim()) return;
+    if (!this.newListTitle.trim()) return;
     const newList: MovieList = {
-      id: this.newListId,
-      title: this.newListTitle,
+      id: this.newListTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36),
+      title: this.newListTitle.trim(),
       movies: [],
       created: new Date(),
       updated: new Date(),
@@ -61,13 +40,12 @@ export class ListManagerComponent implements OnInit {
     };
     this.storage.addList(newList);
     this.lists = this.storage.getLists();
-    this.newListId = '';
     this.newListTitle = '';
   }
 
   getMoviePoster(movieId: number): string {
     const movie = this.storage.getMovies().find((m: any) => m.id === movieId);
-    if (!movie || !movie.poster_path) return 'https://via.placeholder.com/60x90';
+    if (!movie || !movie.poster_path) return 'assets/no-poster.svg';
     if (movie.poster_path.startsWith('http')) return movie.poster_path;
     return 'https://image.tmdb.org/t/p/w500' + movie.poster_path;
   }

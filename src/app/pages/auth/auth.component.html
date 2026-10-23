@@ -1,14 +1,14 @@
 <main class="auth-page">
   <section class="auth-panel">
-    <a class="auth-brand" href="/search" aria-label="Back to Cinetex"><span>C</span><b>cinetex</b></a>
+    <a class="auth-brand" href="/search" aria-label="Back to Cinetex"><span aria-hidden="true">&#10035;</span><b>cinetex</b></a>
     <div class="auth-form-wrap">
       <span class="auth-kicker">Personal film index</span>
-      <h1>{{ mode === 'signin' ? 'Welcome back.' : 'Begin your index.' }}</h1>
+      <h1>{{ mode === 'signin' ? 'Welcome back.' : 'Make yourself at home.' }}</h1>
       <p class="auth-intro">{{ mode === 'signin' ? 'Sign in to keep your taste, lists, and recommendations together.' : 'Create an account to make every recommendation feel more like you.' }}</p>
 
-      <div class="auth-tabs" role="tablist">
-        <button type="button" [class.active]="mode === 'signin'" (click)="setMode('signin')">Sign in</button>
-        <button type="button" [class.active]="mode === 'signup'" (click)="setMode('signup')">Create account</button>
+      <div class="auth-tabs" role="group" aria-label="Account action">
+        <button type="button" [attr.aria-pressed]="mode === 'signin'" [class.active]="mode === 'signin'" (click)="setMode('signin')">Sign in</button>
+        <button type="button" [attr.aria-pressed]="mode === 'signup'" [class.active]="mode === 'signup'" (click)="setMode('signup')">Create account</button>
       </div>
 
       <form (ngSubmit)="submit()" class="auth-form">
@@ -16,8 +16,8 @@
         <label>Email<input name="email" [(ngModel)]="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
         <label>Password<input name="password" [(ngModel)]="password" type="password" [attr.autocomplete]="mode === 'signin' ? 'current-password' : 'new-password'" placeholder="At least 6 characters" minlength="6" required></label>
         <label *ngIf="mode === 'signup'">Confirm password<input name="confirmPassword" [(ngModel)]="confirmPassword" type="password" autocomplete="new-password" placeholder="One more time" required></label>
-        <p *ngIf="errorMessage" class="auth-message error">{{ errorMessage }}</p>
-        <p *ngIf="noticeMessage" class="auth-message notice">{{ noticeMessage }}</p>
+        <p *ngIf="errorMessage" class="auth-message error" role="alert">{{ errorMessage }}</p>
+        <p *ngIf="noticeMessage" class="auth-message notice" role="status">{{ noticeMessage }}</p>
         <button class="auth-submit" type="submit" [disabled]="isSubmitting"><span *ngIf="!isSubmitting">{{ mode === 'signin' ? 'Enter Cinetex' : 'Create my account' }}</span><span *ngIf="isSubmitting">Working…</span><i class="fas fa-arrow-right"></i></button>
       </form>
     </div>
@@ -29,7 +29,7 @@
       <img *ngFor="let poster of posters" [src]="poster" alt="Featured movie poster">
     </div>
     <div class="poster-panel-overlay"></div>
-    <div class="poster-panel-copy"><span>Now compiling</span><strong>A taste<br>made visible.</strong><small>Films, series, anime — selected for you.</small></div>
+    <div class="poster-panel-copy"><span>Your next chapter</span><strong>A life<br>in cinema.</strong><small>Films, series, anime — selected for you.</small></div>
     <span class="poster-panel-index">C/2026</span>
   </aside>
 </main>

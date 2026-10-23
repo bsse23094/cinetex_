@@ -1,59 +1,113 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
 .profile-container {
-  width: min(760px, calc(100% - 3rem));
-  min-height: 58vh;
-  margin: 0 auto;
-  padding: clamp(3rem, 8vw, 6rem) 0;
+  width: min(760px,calc(100% - var(--gutter) * 2));
+  margin: auto;
+  min-height: 65vh;
+  padding: 70px 0;
 }
 
 .profile-kicker {
-  margin: 0 0 1rem;
-  color: #e50914;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .65rem;
-  font-weight: 700;
-  letter-spacing: .12em;
+  font: 10px var(--font-mono);
+  letter-spacing: .15em;
   text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
 }
 
-.profile-header { display: flex; align-items: center; gap: 1.3rem; padding-bottom: 2.2rem; border-bottom: 1px solid rgba(245, 241, 233, .22); }
-.profile-avatar { display: grid; width: 88px; height: 88px; place-items: center; flex: 0 0 auto; background: #e50914; color: #fff; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 3rem; box-shadow: 7px 7px 0 #f5f1e9; }
-.profile-header h1, .profile-empty h1 { margin: 0; color: #f5f1e9; font-family: 'Bebas Neue', Impact, sans-serif; font-size: clamp(3rem, 8vw, 5.25rem); font-weight: 400; letter-spacing: .015em; line-height: .85; }
-.profile-header p { margin: .75rem 0 0; color: rgba(245, 241, 233, .68); font-family: 'IBM Plex Mono', monospace; font-size: .75rem; }
-.profile-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 2rem 0; background: rgba(245, 241, 233, .2); }
-.profile-summary div { display: grid; gap: .4rem; padding: 1.25rem; background: #111; }
-.profile-summary span { color: rgba(245, 241, 233, .52); font-family: 'IBM Plex Mono', monospace; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; }
-.profile-summary strong { color: #f5f1e9; font-size: .9rem; }
-.profile-signout { display: inline-flex; align-items: center; gap: .6rem; padding: .9rem 1.1rem; border: 0; background: #e50914; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; cursor: pointer; }
-.profile-signout:hover { background: #f5f1e9; color: #111; }
-.profile-empty { display: grid; align-content: center; gap: 1.4rem; }
-
-@media (max-width: 560px) {
-  .profile-container { width: min(100% - 2rem, 760px); padding: 3rem 0; }
-  .profile-header { align-items: flex-start; gap: 1rem; }
-  .profile-avatar { width: 62px; height: 62px; font-size: 2.2rem; box-shadow: 5px 5px 0 #f5f1e9; }
-  .profile-summary { grid-template-columns: 1fr; }
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--outline-variant);
 }
 
-.profile-container { position: relative; width: min(900px, calc(100% - 2 * var(--gutter))); min-height: 65vh; padding-top: clamp(4rem, 8vw, 7rem); }
-.profile-container::before { position: absolute; top: clamp(2rem, 4vw, 3.7rem); left: 0; width: 70px; height: 3px; background: #e50914; content: ''; }
-.profile-kicker { margin-bottom: 1.4rem; letter-spacing: .15em; }
-.profile-header { gap: clamp(1.25rem, 3vw, 2.5rem); padding-bottom: clamp(2rem, 4vw, 3rem); }
-.profile-avatar { width: clamp(72px, 10vw, 106px); height: clamp(72px, 10vw, 106px); border: 1px solid #f5f1e9; box-shadow: 6px 6px 0 #e50914; }
-.profile-header h1, .profile-empty h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.7rem, 6vw, 5.8rem); font-weight: 700; letter-spacing: -.085em; line-height: .88; text-transform: uppercase; overflow-wrap: anywhere; }
-.profile-header p { color: #bdb5aa; font-size: .77rem; overflow-wrap: anywhere; }
-.profile-summary { gap: 1rem; margin: clamp(2rem, 4vw, 3rem) 0; background: none; }
-.profile-summary div { min-height: 112px; align-content: center; padding: 1.4rem; border: 1px solid rgba(245,241,233,.28); border-left: 3px solid #e50914; background: linear-gradient(120deg, rgba(245,241,233,.055), rgba(245,241,233,.015)); }
-.profile-summary span { color: #b6ada3; }
-.profile-summary strong { font-size: 1.05rem; }
-.profile-signout { min-height: 42px; padding: .75rem 1rem; border: 1px solid rgba(245,241,233,.5); background: transparent; transition: background .18s ease, color .18s ease; }
-.profile-signout:hover { border-color: #e50914; background: #e50914; color: #fff; }
-.profile-empty .profile-signout { width: fit-content; border-color: #e50914; background: #e50914; }
-.profile-empty .profile-signout:hover { border-color: #f5f1e9; background: #f5f1e9; color: #111; }
-@media (max-width: 560px) {
-  .profile-container { width: calc(100% - 2rem); padding-top: 4rem; }
-  .profile-container::before { top: 2.4rem; }
-  .profile-summary { grid-template-columns: 1fr; }
-  .profile-header { align-items: center; }
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border: 1px solid var(--outline);
+  border-radius: 50%;
+  color: var(--accent);
+  font: 36px var(--font-display);
+}
+
+.profile-header h1,.profile-empty h1 {
+  font: 500 clamp(40px,5vw,65px)/1.1 var(--font-display);
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+
+.profile-header p {
+  color: var(--on-surface-muted);
+  font-size: 12px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 32px 0;
+}
+
+.profile-summary div {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+  background: var(--surface-1);
+  border: 1px solid var(--outline-variant);
+  border-radius: 6px;
+}
+
+.profile-summary span {
+  font-size: 11px;
+  color: var(--on-surface-muted);
+}
+
+.profile-summary strong {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.profile-signout {
+  display: inline-flex;
+  align-items: center;
+  gap: 30px;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 1px solid var(--outline);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.profile-signout:hover {
+  border-color: var(--accent);
+}
+
+.profile-empty h1 {
+  margin-bottom: 32px;
+}
+
+@media(max-width:560px) {
+  .profile-header {
+    align-items: start;
+  }
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 26px;
+  }
+  .profile-summary {
+    grid-template-columns: 1fr;
+  }
+  .profile-container {
+    padding-top: 45px;
+  }
 }

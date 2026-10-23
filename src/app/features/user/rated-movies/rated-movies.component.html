@@ -5,10 +5,10 @@
         <i class="fas fa-star"></i>
       </div>
       <div class="header-text">
-        <span class="page-eyebrow">Personal archive / 02</span>
-        <h1 class="page-title">rated movies</h1>
+        <span class="page-eyebrow">Your collection</span>
+        <h1 class="page-title">Your ratings</h1>
         <p class="page-subtitle">
-          <span class="count">{{ ratedMovies.length }}</span> 
+          <span class="count">{{ ratedMovies.length }}</span>
           {{ ratedMovies.length === 1 ? 'rating' : 'ratings' }} in your collection
         </p>
       </div>
@@ -17,17 +17,17 @@
 
   <div class="rated-grid" *ngIf="ratedMovies.length; else noRated">
     <div class="rated-card" *ngFor="let item of ratedMovies">
-      <div class="card-poster">
+      <a class="card-poster" [routerLink]="['/watch',item.movie.id]" [queryParams]="{type: item.movie.media_type || 'movie'}" [attr.aria-label]="'Watch ' + item.movie.title">
         <img [src]="item.movie.poster_path | posterUrl" [alt]="item.movie.title">
         <div class="card-gradient"></div>
         <div class="your-rating-badge">
           <div class="rating-stars">
-            <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]" 
+            <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"
                [class.filled]="star <= item.rating"></i>
           </div>
           <span class="rating-number">{{ item.rating }}/5</span>
         </div>
-      </div>
+      </a>
       <div class="card-content">
         <h3 class="card-title">{{ item.movie.title }}</h3>
         <div class="card-meta">

@@ -15,14 +15,14 @@
       Back to Lists
     </button>
   </div>
-  
+
   <p class="list-description" *ngIf="list.description">{{ list.description }}</p>
 
   <div class="movies-grid" *ngIf="movies.length > 0; else emptyList">
     <div class="movie-card" *ngFor="let movie of movies">
-      <div class="poster-container">
+      <a class="poster-container" [routerLink]="['/watch',movie.id]" [queryParams]="{type: movie.media_type || 'movie'}" [attr.aria-label]="'Watch ' + movie.title">
         <img [src]="getPosterUrl(movie.poster_path)" [alt]="movie.title">
-      </div>
+      </a>
       <div class="card-info">
         <div class="card-title">{{ movie.title }}</div>
         <div class="card-meta">

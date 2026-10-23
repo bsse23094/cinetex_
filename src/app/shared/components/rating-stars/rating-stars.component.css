@@ -1,22 +1,24 @@
 .rating {
   display: flex;
-  justify-content: center;
-  gap: .18rem;
-  font-size: 1.35rem;
+  gap: 2px;
 }
 
-.rating span {
-  cursor: pointer;
-  color: rgba(245, 241, 233, .26);
-  transition: color .15s ease, transform .15s ease;
-  user-select: none;
+.rating button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--outline);
+  font-size: 25px;
+  transition: color .2s;
+  padding: 0;
 }
 
-.rating span:hover {
-  transform: translateY(-3px);
+.rating button.filled {
+  color: var(--accent);
 }
 
-.rating span.filled {
-  color: #e50914;
-  text-shadow: 2px 2px 0 rgba(245,241,233,.28);
+.rating button:disabled {
+  opacity: 1;
+  cursor: default;
 }

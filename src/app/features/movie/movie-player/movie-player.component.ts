@@ -1,12 +1,15 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { buildEmbedUrl } from './embed-url';
 import { environment } from '../../../../environments/environment';
+import { FocusTrapDirective } from '../../../shared/directives/focus-trap.directive';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../movie.service';
-import { PosterUrlPipe } from '../../../shared/pipes/poster-url.pipe';
-import { combineLatest } from 'rxjs';
+import { combineLatest, Subscription, timeout } from 'rxjs';
+import { FilmRailDirective } from '../../../shared/directives/film-rail.directive';
+import { GuideSelectComponent, GuideOption } from '../../../shared/components/guide-select/guide-select.component';
 import { StorageService } from '../../../core/services/storage.service';
 import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
 
@@ -14,12 +17,13 @@ import { RatingStarsComponent } from '../../../shared/components/rating-stars/ra
 @Component({
   selector: 'app-movie-player',
   templateUrl: './movie-player.component.html',
-  imports: [CommonModule, FormsModule, DatePipe, RatingStarsComponent],
+  imports: [CommonModule, FormsModule, DatePipe, RatingStarsComponent, RouterLink, FocusTrapDirective, FilmRailDirective, GuideSelectComponent],
   styleUrls: ['./movie-player.component.css']
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoIframe') videoIframe!: ElementRef<HTMLIFrameElement>;
-  @ViewChild('episodesGrid') episodesGrid?: ElementRef<HTMLDivElement>;
+  @ViewChild('playerScreen') playerScreen?: ElementRef<HTMLElement>;
+  @ViewChild('episodeTrack') episodeTrack?: ElementRef<HTMLElement>;
 
   movieId: string | null = null;
   mediaType: string = 'movie'; // 'movie' or 'tv'
@@ -30,12 +34,34 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   // Movie/Show details
   mediaDetails: any = null;
   loading = true;
+  detailsError = false;
+  theaterMode = false;
+  playerConnecting = true;
+  playerSlow = false;
+  playerFeedback = '';
+  readonly playerSources = [environment.embedBaseUrl, ...environment.embedFallbackBaseUrls].filter((url, index, urls) => !!url && urls.indexOf(url) === index);
+  playerSourceIndex = 0;
+  guideSeason = 1;
+  guideDetails: any = null;
+  loadingGuide = false;
+  guideError = false;
+  private routeSubscription?: Subscription;
+  private detailsSubscription?: Subscription;
+  private seasonSubscription?: Subscription;
+  private guideSubscription?: Subscription;
+  private navigationSubscription?: Subscription;
+  episodeNavigationPending = false;
+  private playerTimer?: ReturnType<typeof setTimeout>;
+  private playbackKey = '';
+  private reloadTimer?: ReturnType<typeof setTimeout>;
+
 
   // View toggle for TV shows
-  showDetails = true; // Default to showing details
+  showDetails = false; // Series open on the episode guide.
 
   // Skip intro / credits features
   showNextEpisode = false;
+  autoplayNext = false;
   creditsStart = 0; // will be calculated based on runtime
   videoCurrentTime = 0;
   videoDuration = 0;
@@ -65,7 +91,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedListIds: string[] = [];
   newListTitle = '';
   showNewListForm = false;
-  showSeasonDropdown = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -75,38 +100,130 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     private storage: StorageService
   ) { }
 
-  scrollEpisodes(direction: -1 | 1): void {
-    const episodeGrid = this.episodesGrid?.nativeElement;
-    if (!episodeGrid) return;
-    episodeGrid.scrollBy({
-      left: direction * Math.max(episodeGrid.clientWidth * 0.78, 340),
-      behavior: 'smooth'
+  onPlayerLoaded(): void {
+    this.playerConnecting = false;
+    this.playerSlow = false;
+    clearTimeout(this.playerTimer);
+  }
+  reloadPlayer(): void {
+    clearTimeout(this.playerTimer);
+    this.playerConnecting = true;
+    this.playerSlow = false;
+    this.trustedVideoUrl = null;
+    clearTimeout(this.reloadTimer);
+    this.reloadTimer = setTimeout(() => this.setVideoUrl(this.videoCurrentTime), 30);
+  }
+  tryAlternatePlayer(): void {
+    if (this.playerSources.length < 2) return;
+    this.playerSourceIndex = (this.playerSourceIndex + 1) % this.playerSources.length;
+    this.reloadPlayer();
+  }
+  onPlayerError(): void {
+    clearTimeout(this.playerTimer);
+    this.playerConnecting = false;
+    this.playerSlow = true;
+  }
+  async enterFullscreen(): Promise<void> {
+    this.playerFeedback = '';
+    try {
+      if (this.playerScreen?.nativeElement.requestFullscreen) await this.playerScreen.nativeElement.requestFullscreen();
+      else this.playerFeedback = 'Use the fullscreen control inside the video on this device.';
+    } catch { this.playerFeedback = 'Use the fullscreen control inside the video on this device.'; }
+  }
+  loadGuideSeason(value: number): void {
+    if (!Number.isInteger(Number(value)) || Number(value) < 0) return;
+    this.guideSeason = Number(value);
+    this.episodeTrack?.nativeElement.scrollTo({ left: 0, behavior: 'instant' });
+    this.guideError = false;
+    this.guideSubscription?.unsubscribe();
+    if (this.guideSeason === this.season && this.seasonDetails) {
+      this.guideDetails = this.seasonDetails;
+      this.loadingGuide = false;
+      return;
+    }
+    this.loadingGuide = true;
+    this.guideDetails = null;
+    this.guideSubscription = this.movieService.getTvSeasonDetails(Number(this.movieId), this.guideSeason).pipe(timeout(15000)).subscribe({
+      next: data => {
+        this.guideDetails = data;
+        this.loadingGuide = false;
+        if (this.guideSeason === this.season) {
+          this.seasonDetails = data;
+          this.totalEpisodesInSeason = data.episodes?.length || 0;
+        }
+      },
+      error: () => { this.guideError = true; this.loadingGuide = false; }
+    });
+  }
+  playGuideEpisode(number: number): void {
+    if (this.loadingGuide || !this.guideDetails?.episodes?.some((ep: any) => ep.episode_number === Number(number))) return;
+    if (this.guideSeason === this.season && Number(number) === this.episode) return;
+    this.season = this.guideSeason;
+    this.playEpisode(Number(number));
+  }
+
+  get currentEpisode(): any {
+    return this.seasonDetails?.episodes?.find((ep: any) => ep.episode_number === this.episode);
+  }
+
+  seasonLabel(number: number): string {
+    return this.mediaDetails?.seasons?.find((item: any) => item.season_number === number)?.name
+      || (number === 0 ? 'Specials' : `Season ${number}`);
+  }
+
+  get guideSeasonOptions(): GuideOption[] {
+    return this.allSeasons.map(value => {
+      const count = this.mediaDetails?.seasons?.find((item: any) => item.season_number === value)?.episode_count;
+      return { value, label: this.seasonLabel(value), detail: count == null ? '' : `${count} ${count === 1 ? 'episode' : 'episodes'}` };
     });
   }
 
-  onEpisodesWheel(event: WheelEvent): void {
-    const episodeGrid = this.episodesGrid?.nativeElement;
-    if (!episodeGrid || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
-
-    const canScrollLeft = event.deltaY < 0 && episodeGrid.scrollLeft > 0;
-    const canScrollRight = event.deltaY > 0 && episodeGrid.scrollLeft + episodeGrid.clientWidth < episodeGrid.scrollWidth - 1;
-    if (!canScrollLeft && !canScrollRight) return;
-
-    event.preventDefault();
-    episodeGrid.scrollLeft += event.deltaY;
+  get guideEpisodeOptions(): GuideOption[] {
+    return (this.guideDetails?.episodes || []).map((ep: any) => ({
+      value: ep.episode_number,
+      label: ep.name || `Episode ${ep.episode_number}`,
+      marker: `E${String(ep.episode_number).padStart(2, '0')}`,
+      detail: [ep.runtime ? `${ep.runtime} min` : '', this.guideSeason === this.season && ep.episode_number === this.episode ? 'On screen' : ''].filter(Boolean).join(' / ')
+    }));
   }
+
+  toggleAutoplay(): void {
+    this.autoplayNext = !this.autoplayNext;
+    if (!this.autoplayNext) this.cancelNextEpisode();
+  }
+
+  trackEpisode(_: number, ep: any): number { return ep.episode_number; }
 
   ngOnInit(): void {
     // Combine both paramMap and queryParamMap to ensure we have all data before loading
-    combineLatest([
+    this.routeSubscription = combineLatest([
       this.route.paramMap,
       this.route.queryParamMap
     ]).subscribe(([params, queryParams]) => {
       this.movieId = params.get('id');
       this.mediaType = queryParams.get('type') || 'movie';
-      this.season = parseInt(queryParams.get('season') || '1', 10);
-      this.episode = parseInt(queryParams.get('episode') || '1', 10);
+      this.season = Math.max(0, parseInt(queryParams.get('season') || '1', 10) || 0);
+      this.episode = Math.max(1, parseInt(queryParams.get('episode') || '1', 10) || 1);
+      const key = `${this.mediaType}:${this.movieId}:${this.season}:${this.episode}`;
+      if (key !== this.playbackKey) { this.videoCurrentTime = 0; this.videoDuration = 0; this.playbackKey = key; }
+      clearTimeout(this.reloadTimer);
 
+      this.guideSeason = this.season;
+      this.guideDetails = null;
+      this.loadingGuide = this.mediaType === 'tv';
+      this.guideError = false;
+      this.guideSubscription?.unsubscribe();
+      this.seasonSubscription?.unsubscribe();
+      this.navigationSubscription?.unsubscribe();
+      this.episodeNavigationPending = false;
+      this.mediaDetails = null;
+      this.allSeasons = [];
+      this.totalSeasons = 0;
+      this.seasonDetails = null;
+      this.totalEpisodesInSeason = 0;
+      this.showContinueWatching = false;
+      this.savedProgress = null;
+      this.cancelNextEpisode();
       // Check for saved progress
       this.checkSavedProgress();
 
@@ -124,6 +241,10 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe(); this.detailsSubscription?.unsubscribe();
+    this.seasonSubscription?.unsubscribe(); this.guideSubscription?.unsubscribe();
+    this.navigationSubscription?.unsubscribe();
+    clearTimeout(this.playerTimer); clearTimeout(this.reloadTimer);
     // Clean up intervals
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
@@ -158,12 +279,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
             this.savedProgress.episode !== this.episode) {
             this.showContinueWatching = true;
           }
-        } else {
-          // For movies, show if there's saved progress and it's not at the beginning
-          if (this.savedProgress.progress > 5) {
-            this.showContinueWatching = true;
-          }
-        }
+        } // The embedded player owns movie resume; only offer episode navigation here.
       } catch (e) {
         console.error('Error parsing saved progress:', e);
       }
@@ -189,20 +305,12 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
         queryParamsHandling: 'merge'
       });
 
-      this.setVideoUrl();
     } else {
       // For movies, just update the current time
       this.videoCurrentTime = this.savedProgress.progress || 0;
     }
 
     this.showContinueWatching = false;
-  }
-
-  startFromBeginning(): void {
-    this.videoCurrentTime = 0;
-    this.showContinueWatching = false;
-    // Clear saved progress
-    localStorage.removeItem(this.getProgressKey());
   }
 
   saveProgress(): void {
@@ -245,86 +353,78 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   handleIframeMessage(event: MessageEvent): void {
-    // Handle postMessage from iframe if available
-    if (event.data && typeof event.data === 'object') {
-      if (event.data.type === 'timeupdate') {
-        this.videoCurrentTime = event.data.currentTime || 0;
-        this.videoDuration = event.data.duration || 0;
-      }
+    const iframe = this.videoIframe?.nativeElement;
+    if (!iframe || event.source !== iframe.contentWindow) return;
+    let allowedOrigin: string;
+    try { allowedOrigin = new URL(iframe.src).origin; } catch { return; }
+    if (event.origin !== allowedOrigin || !event.data || typeof event.data !== 'object') return;
+    const payload = event.data.type === 'PLAYER_EVENT' ? event.data.data : event.data;
+    if (!payload || typeof payload !== 'object') return;
+    const modern = event.data.type === 'PLAYER_EVENT';
+    const status = modern ? payload.player_status : payload.type;
+    if (modern || status === 'timeupdate') {
+      const current = Number(modern ? payload.player_progress : payload.currentTime);
+      const duration = Number(modern ? payload.player_duration : payload.duration);
+      if (Number.isFinite(current) && current >= 0) this.videoCurrentTime = current;
+      if (Number.isFinite(duration) && duration >= 0) this.videoDuration = duration;
+    }
+    if (['playing', 'paused', 'seeked', 'timeupdate', 'completed', 'ended'].includes(status)) this.onPlayerLoaded();
+    if ((status === 'ended' || status === 'completed') && this.autoplayNext && this.hasNextEpisode() && !this.showNextEpisode) {
+      this.showNextEpisode = true;
+      this.startNextEpisodeCountdown();
     }
   }
 
   startVideoMonitoring(): void {
-    if (this.videoProgressInterval) {
-      clearTimeout(this.videoProgressInterval);
-    }
-    // For TV shows, show next episode prompt after estimated duration
-    if (this.mediaType === 'tv') {
-      // Typical TV episode is ~42-45 minutes, show prompt at ~40 minutes
-      this.videoProgressInterval = setTimeout(() => {
-        if (this.hasNextEpisode()) {
-          this.showNextEpisode = true;
-          this.startNextEpisodeCountdown();
-        }
-      }, 2400000); // 40 minutes in milliseconds
-    }
+    // Advance only after a verified player completion event, never a guessed runtime.
+    if (this.videoProgressInterval) clearTimeout(this.videoProgressInterval);
   }
 
-  checkVideoProgress(): void {
-    // This method is now handled by time-based estimates
-    // since we can't access iframe internals
+  private adjacentSeason(direction: number): number | undefined {
+    const seasons = this.allSeasons.length ? this.allSeasons : Array.from({ length: Math.max(this.totalSeasons, this.season) }, (_, i) => i + 1);
+    const index = seasons.indexOf(this.season);
+    return index < 0 ? undefined : seasons[index + direction];
   }
 
   hasNextEpisode(): boolean {
-    if (this.mediaType !== 'tv' || !this.mediaDetails) return false;
-
-    // Check if there's a next episode in current season
-    if (this.episode < this.totalEpisodesInSeason) return true;
-
-    // Check if there's a next season
-    if (this.season < this.totalSeasons) return true;
-
-    return false;
+    return this.mediaType === 'tv' && !!this.mediaDetails && !this.loadingEpisodes && !this.episodeNavigationPending
+      && (this.episode < this.totalEpisodesInSeason || this.adjacentSeason(1) !== undefined);
   }
 
   hasPreviousEpisode(): boolean {
-    if (this.mediaType !== 'tv' || !this.mediaDetails) return false;
+    return this.mediaType === 'tv' && !!this.mediaDetails && !this.loadingEpisodes && !this.episodeNavigationPending
+      && (this.episode > 1 || this.adjacentSeason(-1) !== undefined);
+  }
 
-    // Check if there's a previous episode in current season
-    if (this.episode > 1) return true;
-
-    // Check if there's a previous season
-    if (this.season > 1) return true;
-
-    return false;
+  private navigateSeason(direction: number): void {
+    const target = this.adjacentSeason(direction);
+    if (target === undefined || !this.movieId) return;
+    this.episodeNavigationPending = true;
+    this.playerFeedback = '';
+    this.navigationSubscription?.unsubscribe();
+    this.navigationSubscription = this.movieService.getTvSeasonDetails(Number(this.movieId), target).pipe(timeout(15000)).subscribe({
+      next: data => {
+        this.episodeNavigationPending = false;
+        const episodes = data.episodes || [];
+        const targetEpisode = direction > 0 ? episodes[0] : episodes[episodes.length - 1];
+        if (!targetEpisode) { this.playerFeedback = 'No episodes are available in that season yet.'; return; }
+        this.cancelNextEpisode();
+        this.season = target;
+        this.episode = targetEpisode.episode_number;
+        this.updateUrlParams();
+      },
+      error: () => {
+        this.episodeNavigationPending = false;
+        this.playerFeedback = 'That season could not load. Please try again.';
+      }
+    });
   }
 
   playPreviousEpisode(): void {
     if (!this.hasPreviousEpisode()) return;
-
-    // Reset states
+    if (this.episode === 1) { this.navigateSeason(-1); return; }
     this.cancelNextEpisode();
-    this.videoCurrentTime = 0;
-    this.videoDuration = 0;
-
-    if (this.episode > 1) {
-      // Previous episode in same season
-      this.episode--;
-    } else if (this.season > 1) {
-      // Last episode of previous season
-      this.season--;
-      this.loadSeasonDetails(this.season);
-
-      // We need to wait for season details to load to get the last episode number
-      setTimeout(() => {
-        this.episode = this.totalEpisodesInSeason;
-        this.setVideoUrl();
-        this.updateUrlParams();
-      }, 500);
-      return; // Exit early, we'll update URL after season loads
-    }
-
-    this.setVideoUrl();
+    this.episode--;
     this.updateUrlParams();
   }
 
@@ -370,23 +470,9 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   playNextEpisode(): void {
     if (!this.hasNextEpisode()) return;
-
-    // Reset states
+    if (this.episode >= this.totalEpisodesInSeason) { this.navigateSeason(1); return; }
     this.cancelNextEpisode();
-    this.videoCurrentTime = 0;
-    this.videoDuration = 0;
-
-    if (this.episode < this.totalEpisodesInSeason) {
-      // Next episode in same season
-      this.episode++;
-    } else if (this.season < this.totalSeasons) {
-      // First episode of next season
-      this.season++;
-      this.episode = 1;
-      this.loadSeasonDetails(this.season);
-    }
-
-    this.setVideoUrl();
+    this.episode++;
     this.updateUrlParams();
   }
 
@@ -394,21 +480,19 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.movieId) return;
 
     this.loading = true;
+    this.detailsError = false;
+    this.detailsSubscription?.unsubscribe();
     const id = parseInt(this.movieId, 10);
 
-    console.log('Loading media details:', { id, mediaType: this.mediaType });
-
     if (this.mediaType === 'tv') {
-      this.movieService.getTvDetails(id).subscribe({
+      this.detailsSubscription = this.movieService.getTvDetails(id).pipe(timeout(15000)).subscribe({
         next: (data: any) => {
-          console.log('TV details loaded:', data);
           this.mediaDetails = data;
           this.totalSeasons = data.number_of_seasons || 0;
-          this.allSeasons = Array.from({ length: this.totalSeasons }, (_, i) => i + 1);
+          this.allSeasons = data.seasons?.length
+            ? data.seasons.filter((item: any) => item.episode_count > 0 || item.season_number === this.season).map((item: any) => item.season_number).sort((a: number, b: number) => a - b)
+            : Array.from({ length: this.totalSeasons }, (_, i) => i + 1);
           this.loading = false;
-
-          // Set backdrop image as CSS variable
-          this.setBackdropImage(data.backdrop_path);
 
           // Load current season details to get episode count
           this.loadSeasonDetails(this.season);
@@ -421,19 +505,16 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.checkFavoriteStatus();
         },
         error: (err) => {
-          console.error('Error loading TV details:', err);
+          this.detailsError = true;
+          this.loadingGuide = false;
           this.loading = false;
         }
       });
     } else {
-      this.movieService.getMovieDetails(id).subscribe({
+      this.detailsSubscription = this.movieService.getMovieDetails(id).pipe(timeout(15000)).subscribe({
         next: (data: any) => {
-          console.log('Movie details loaded:', data);
           this.mediaDetails = data;
           this.loading = false;
-
-          // Set backdrop image as CSS variable
-          this.setBackdropImage(data.backdrop_path);
 
           // Set video duration for movies
           if (data.runtime) {
@@ -445,48 +526,31 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.checkFavoriteStatus();
         },
         error: (err) => {
-          console.error('Error loading movie details:', err);
+          this.detailsError = true;
           this.loading = false;
         }
       });
     }
   }
 
-  loadSeasonDetails(seasonNumber: number): void {
+  loadSeasonDetails(seasonNumber: number, onLoaded?: () => void): void {
     if (!this.movieId) return;
 
     this.loadingEpisodes = true;
     const id = parseInt(this.movieId, 10);
-    this.movieService.getTvSeasonDetails(id, seasonNumber).subscribe({
+    this.seasonSubscription?.unsubscribe();
+    this.seasonSubscription = this.movieService.getTvSeasonDetails(id, seasonNumber).pipe(timeout(15000)).subscribe({
       next: (data: any) => {
-        console.log('Season details loaded:', data);
         this.seasonDetails = data;
         this.totalEpisodesInSeason = data.episodes?.length || 0;
         this.loadingEpisodes = false;
+        if (this.guideSeason === seasonNumber) { this.guideDetails = data; this.loadingGuide = false; }
+        onLoaded?.();
       },
       error: (err: any) => {
-        console.error('Error loading season details:', err);
+        if (this.guideSeason === seasonNumber) { this.guideError = true; this.loadingGuide = false; }
         this.loadingEpisodes = false;
       }
-    });
-  }
-
-  onSeasonChange(newSeason: number): void {
-    this.cancelNextEpisode();
-    this.season = newSeason;
-    this.episode = 1;
-    this.loadSeasonDetails(newSeason);
-    this.setVideoUrl();
-
-    // Update URL
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        type: this.mediaType,
-        season: this.season,
-        episode: this.episode
-      },
-      queryParamsHandling: 'merge'
     });
   }
 
@@ -495,8 +559,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.episode = episodeNumber;
     this.videoCurrentTime = 0;
     this.videoDuration = 2700; // Reset duration
-    this.setVideoUrl();
-
     // Update URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -509,18 +571,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Scroll to top to show player
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }
 
   getEpisodeThumbnail(episode: any): string {
     if (episode.still_path) {
       return `https://image.tmdb.org/t/p/w300${episode.still_path}`;
     }
-    return 'assets/no-image.jpg'; // Fallback image
+    return 'assets/no-poster.svg'; // Fallback image
   }
 
   getPosterUrl(path: string): string {
-    if (!path) return 'assets/no-image.jpg';
+    if (!path) return 'assets/no-poster.svg';
     return `https://image.tmdb.org/t/p/w500${path}`;
   }
 
@@ -528,38 +590,14 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectEpisode(episodeNumber);
   }
 
-  setProvider(provider: string) {
-    // No-op: single provider logic
-  }
-
-  setVideoUrl() {
-    if (!this.movieId) return;
-    if (!environment.embedBaseUrl) {
-      this.trustedVideoUrl = null;
-      return;
-    }
-
-    let url = '';
-
-    // vidsrc-embed.ru uses tmdb id format
-    // For movies: https://vidsrc-embed.ru/embed/movie/{tmdb_id}
-    // For TV shows (series): https://vidsrc-embed.ru/embed/tv/{tmdb_id}
-    // For TV episodes: https://vidsrc-embed.ru/embed/tv/{tmdb_id}/{season}-{episode}
-    // For anime: Use alternative embed with gogoanime
-
-    if (this.mediaType === 'anime') {
-      // For anime, try to use gogoanime embed or fallback
-      const animeTitle = this.mediaDetails?.title || this.mediaDetails?.name || '';
-      const sanitizedTitle = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      url = `https://gogoplay1.com/embedplus?id=${sanitizedTitle}-episode-${this.episode}`;
-    } else if (this.mediaType === 'tv') {
-      // TV show: include season and episode
-      url = `${environment.embedBaseUrl}/embed/tv/${this.movieId}/${this.season}-${this.episode}`;
-    } else {
-      // Movie
-      url = `${environment.embedBaseUrl}/embed/movie/${this.movieId}`;
-    }
-
+  setVideoUrl(resumeAt = 0): void {
+    clearTimeout(this.playerTimer);
+    const url = buildEmbedUrl(this.playerSources[this.playerSourceIndex], this.mediaType, this.movieId, this.season, this.episode, resumeAt);
+    if (!url) { this.trustedVideoUrl = null; this.playerConnecting = false; return; }
+    this.playerConnecting = true;
+    this.playerSlow = false;
+    this.playerFeedback = '';
+    this.playerTimer = setTimeout(() => this.onPlayerError(), 12000);
     this.trustedVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
@@ -571,15 +609,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       .slice(0, 3)
       .map((c: any) => c.name)
       .join(', ');
-  }
-
-  setBackdropImage(backdropPath: string | null): void {
-    if (backdropPath) {
-      const backdropUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
-      document.documentElement.style.setProperty('--backdrop-image', `url('${backdropUrl}')`);
-    } else {
-      document.documentElement.style.setProperty('--backdrop-image', 'none');
-    }
   }
 
   // Movie Actions

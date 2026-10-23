@@ -1,12 +1,13 @@
-<div class="player-page">
+<div class="player-page" [class.theater-mode]="theaterMode">
+  <div class="screen-atmosphere" aria-hidden="true"><img *ngIf="mediaDetails?.backdrop_path" [src]="'https://image.tmdb.org/t/p/w1280' + mediaDetails.backdrop_path" alt=""></div>
   <header class="screen-heading" aria-label="Now watching">
     <div class="screen-heading-copy">
-      <span class="screen-kicker"><span class="screen-kicker-dot"></span> Cinetex / Screening room</span>
+      <span class="screen-kicker"><span class="screen-kicker-dot"></span> Screening room</span>
       <h1>{{ mediaDetails?.title || mediaDetails?.name || 'Now playing' }}</h1>
-      <p *ngIf="mediaType === 'tv'">Season {{ season }} <span aria-hidden="true">/</span> Episode {{ episode }}<ng-container *ngIf="seasonDetails?.episodes?.[episode - 1]?.name"> <span aria-hidden="true">/</span> {{ seasonDetails.episodes[episode - 1].name }}</ng-container></p>
+      <p *ngIf="mediaType === 'tv'">Season {{ season }} <span aria-hidden="true">/</span> Episode {{ episode }}<ng-container *ngIf="currentEpisode?.name"> <span aria-hidden="true">/</span> {{ currentEpisode.name }}</ng-container></p>
       <p *ngIf="mediaType === 'movie'">Feature presentation <span aria-hidden="true">/</span> {{ mediaDetails?.release_date | date:'yyyy' }}</p>
     </div>
-    <span class="screen-heading-index" aria-hidden="true">C / {{ mediaType === 'tv' ? 'SERIES' : 'FILM' }}</span>
+    <a routerLink="/search" class="screen-back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7" /></svg> Back to discovery</a>
   </header>
   <!-- Continue Watching Banner -->
   <div *ngIf="showContinueWatching && savedProgress" class="continue-banner">
@@ -15,7 +16,7 @@
         <i class="fas fa-history"></i>
       </div>
       <div class="continue-info">
-        <h3>Continue Watching?</h3>
+        <h3>Pick up your series</h3>
         <p *ngIf="mediaType === 'tv'">
           Last watched: <span class="highlight">{{ savedProgress.seasonName }}</span>
         </p>
@@ -26,40 +27,49 @@
       </div>
       <div class="continue-actions">
         <button class="btn-primary" (click)="continueWatching()">
-          <i class="fas fa-play"></i> Continue
+          <i class="fas fa-play"></i> Resume episode
         </button>
-        <button class="btn-secondary" (click)="startFromBeginning()">
-          <i class="fas fa-redo"></i> Start Over
+        <button class="btn-secondary" (click)="showContinueWatching = false">
+          <i class="fas fa-redo"></i> Stay here
         </button>
       </div>
     </div>
   </div>
 
   <!-- Video Player -->
-  <div class="player-wrapper">
+  <div class="player-wrapper" #playerScreen>
     <div class="player-container">
-      <iframe #videoIframe *ngIf="trustedVideoUrl" [src]="trustedVideoUrl" frameborder="0" allowfullscreen
+      <div class="player-connecting" *ngIf="playerConnecting && trustedVideoUrl" role="status"><span class="spinner"></span><span>Opening the screening room</span></div>
+      <iframe (load)="onPlayerLoaded()" (error)="onPlayerError()" [title]="(mediaDetails?.title || mediaDetails?.name || 'Cinetex') + ' video player'" #videoIframe *ngIf="trustedVideoUrl" [src]="trustedVideoUrl" frameborder="0" allowfullscreen
         allow="autoplay; encrypted-media">
       </iframe>
       <div *ngIf="!trustedVideoUrl" class="no-video-state">
         <i class="fas fa-video-slash"></i>
-        <p>No video available</p>
+        <p>This screening is unavailable</p>
       </div>
 
     </div>
   </div>
 
+  <div class="player-utility-bar">
+    <span class="player-source"><span></span> {{ mediaType === 'tv' ? 'Series screening' : 'Feature presentation' }}</span>
+    <div class="player-utility-actions"><button *ngIf="playerSources.length > 1" (click)="tryAlternatePlayer()" aria-label="Switch to an alternate video player"><i class="fas fa-arrows-left-right" aria-hidden="true"></i><span>Alternate player</span></button><button (click)="reloadPlayer()" aria-label="Reload video player"><i class="fas fa-redo" aria-hidden="true"></i><span>Reload</span></button><button class="theater-toggle" [attr.aria-pressed]="theaterMode" (click)="theaterMode = !theaterMode"><i class="fas fa-film" aria-hidden="true"></i><span>{{ theaterMode ? 'Standard view' : 'Cinema view' }}</span></button><button (click)="enterFullscreen()"><i class="fas fa-expand" aria-hidden="true"></i><span>Fullscreen</span></button></div>
+  </div>
+  <div class="player-notice player-recovery" *ngIf="playerSlow" role="status"><div><strong>This player is taking too long.</strong><p>Try another connection to the film.</p></div><button *ngIf="playerSources.length > 1" (click)="tryAlternatePlayer()">Try alternate player <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" /></svg></button><button (click)="reloadPlayer()">Retry</button></div>
+  <p class="player-notice" *ngIf="playerFeedback" role="status">{{ playerFeedback }}</p>
+  <div class="player-notice" *ngIf="detailsError" role="alert">Title information couldn't load. <button (click)="loadMediaDetails()">Try again</button></div>
   <div class="screen-toolbar" *ngIf="mediaType === 'tv'">
     <div class="current-episode-badge">
       <span class="episode-label">On screen</span>
       <span class="episode-info">S{{ season < 10 ? '0' + season : season }} / E{{ episode < 10 ? '0' + episode : episode }}</span>
     </div>
+    <button type="button" class="autoplay-control" role="switch" [attr.aria-checked]="autoplayNext" (click)="toggleAutoplay()"><span class="autoplay-track" aria-hidden="true"><span class="autoplay-thumb"></span></span><span class="autoplay-label">Auto-play next</span></button>
     <div class="episode-nav-buttons" aria-label="Episode navigation">
       <button type="button" class="episode-nav-btn prev" (click)="playPreviousEpisode()" [disabled]="!hasPreviousEpisode()" aria-label="Previous episode">
-        <i class="fas fa-arrow-left" aria-hidden="true"></i><span>Previous episode</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7" /></svg><span>Previous episode</span>
       </button>
       <button type="button" class="episode-nav-btn next" (click)="playNextEpisode()" [disabled]="!hasNextEpisode()" aria-label="Next episode">
-        <span>Next episode</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
+        <span>Next episode</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
       </button>
     </div>
   </div>
@@ -77,11 +87,11 @@
   <!-- Controls Section -->
   <div class="player-controls" *ngIf="mediaType === 'tv'">
     <div class="view-toggle">
-      <button class="toggle-btn" [class.active]="showDetails" (click)="showDetails = true">
+      <button class="toggle-btn" [attr.aria-pressed]="showDetails" [class.active]="showDetails" (click)="showDetails = true">
         <i class="fas fa-info-circle"></i>
         <span>Details</span>
       </button>
-      <button class="toggle-btn" [class.active]="!showDetails" (click)="showDetails = false">
+      <button class="toggle-btn" [attr.aria-pressed]="!showDetails" [class.active]="!showDetails" (click)="showDetails = false">
         <i class="fas fa-list"></i>
         <span>Episodes</span>
       </button>
@@ -89,53 +99,44 @@
   </div>
 
   <!-- Episodes Section -->
-  <div *ngIf="mediaType === 'tv' && !showDetails && mediaDetails" class="episodes-section">
+  <div appFilmRail #episodesRail="filmRail" *ngIf="mediaType === 'tv' && !showDetails && mediaDetails" class="episodes-section">
     <div class="episodes-header">
       <div class="episodes-title-block">
-        <span class="section-kicker">Episode guide</span>
-        <h2>Choose the next chapter</h2>
+        <h2>the <em>episodes.</em></h2>
       </div>
-      <div class="season-selector-wrapper">
-        <button type="button" class="season-dropdown-btn" (click)="showSeasonDropdown = !showSeasonDropdown" [attr.aria-expanded]="showSeasonDropdown">
-          <span>Season {{ season }}</span>
-          <i class="fas fa-chevron-down" [class.rotated]="showSeasonDropdown"></i>
-        </button>
-        <div class="season-dropdown" *ngIf="showSeasonDropdown">
-          <button type="button" *ngFor="let s of allSeasons" class="season-option" [class.active]="s === season"
-            (click)="onSeasonChange(s); showSeasonDropdown = false">
-            Season {{ s }}
-            <i *ngIf="s === season" class="fas fa-check"></i>
-          </button>
-        </div>
+      <div class="guide-selectors">
+        <app-guide-select inputId="guide-season" label="Season" [options]="guideSeasonOptions" [value]="guideSeason" (valueChange)="loadGuideSeason($event)"></app-guide-select>
+        <app-guide-select inputId="guide-episode" label="Jump to episode" [options]="guideEpisodeOptions" [value]="guideSeason === season ? episode : null" [placeholder]="loadingGuide ? 'Loading episodes...' : 'Choose an episode'" [disabled]="loadingGuide || !guideDetails?.episodes?.length" (valueChange)="playGuideEpisode($event)"></app-guide-select>
       </div>
     </div>
 
-    <div class="episode-scroll-actions" *ngIf="seasonDetails && !loadingEpisodes">
-      <span><i class="fas fa-arrows-left-right"></i> Browse episodes</span>
+    <div class="guide-season-summary"><span>{{ seasonLabel(guideSeason) }}<ng-container *ngIf="guideDetails && !loadingGuide"> <span aria-hidden="true">/</span> {{ guideDetails.episodes?.length || 0 }} episodes</ng-container></span><button *ngIf="guideSeason !== season" (click)="loadGuideSeason(season)">Return to current season <span aria-hidden="true">&#8599;</span></button></div>
+    <div *ngIf="loadingGuide" class="guide-loading" role="status" aria-live="polite"><span class="spinner"></span> Loading episodes<div class="episode-skeletons" aria-hidden="true"><div class="skeleton" *ngFor="let item of [1,2,3]"></div></div></div>
+    <div class="episode-scroll-actions" *ngIf="guideDetails && !loadingGuide">
+      <span>{{ episodesRail.range }} episodes <span class="guide-hint">&middot; Choose an episode to play</span></span>
       <div>
-        <button type="button" (click)="scrollEpisodes(-1)" aria-controls="episodes-grid" aria-label="Show previous episodes"><i class="fas fa-arrow-left"></i></button>
-        <button type="button" (click)="scrollEpisodes(1)" aria-controls="episodes-grid" aria-label="Show more episodes"><i class="fas fa-arrow-right"></i></button>
+        <button type="button" (click)="episodesRail.previous()" [disabled]="episodesRail.atStart" aria-controls="episodes-grid" aria-label="Show previous episodes"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg></button>
+        <button type="button" (click)="episodesRail.next()" [disabled]="episodesRail.atEnd" aria-controls="episodes-grid" aria-label="Show more episodes"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14m-7-7 7 7-7 7" /></svg></button>
       </div>
     </div>
 
-    <div #episodesGrid id="episodes-grid" class="episodes-grid" *ngIf="seasonDetails && !loadingEpisodes" tabindex="0" aria-label="Episode list. Scroll horizontally to browse more episodes." (wheel)="onEpisodesWheel($event)">
-      <article class="episode-card" *ngFor="let ep of seasonDetails.episodes" (click)="playEpisode(ep.episode_number)"
-        (keydown.enter)="playEpisode(ep.episode_number)" (keydown.space)="$event.preventDefault(); playEpisode(ep.episode_number)" role="button" tabindex="0"
-        [class.active]="ep.episode_number === episode" [class.current-playing]="ep.episode_number === episode"
+    <div data-slider-track #episodeTrack id="episodes-grid" class="episodes-grid" [hidden]="loadingGuide || !guideDetails" [attr.aria-busy]="loadingGuide" tabindex="0" aria-label="Episode list. Scroll horizontally to browse more episodes.">
+      <article data-slider-item class="episode-card" *ngFor="let ep of guideDetails?.episodes; let episodeIndex = index; trackBy: trackEpisode" [style.--episode-index]="episodeIndex" (click)="playGuideEpisode(ep.episode_number)"
+        (keydown.enter)="playGuideEpisode(ep.episode_number)" (keydown.space)="$event.preventDefault(); playGuideEpisode(ep.episode_number)" role="button" tabindex="0"
+        [class.active]="(guideSeason === season && ep.episode_number === episode)" [class.current-playing]="(guideSeason === season && ep.episode_number === episode)"
         [attr.aria-label]="'Play episode ' + ep.episode_number + ': ' + ep.name"
-        [attr.aria-current]="ep.episode_number === episode ? 'true' : null">
+        [attr.aria-current]="(guideSeason === season && ep.episode_number === episode) ? 'true' : null">
         <div class="episode-thumbnail">
-          <img [src]="getEpisodeThumbnail(ep)" alt="Episode {{ ep.episode_number }}">
+          <img loading="lazy" [src]="getEpisodeThumbnail(ep)" alt="Episode {{ ep.episode_number }}">
           <div class="episode-overlay">
             <div class="play-icon">
-              <i class="fas" [class.fa-play]="ep.episode_number !== episode"
-                [class.fa-pause]="ep.episode_number === episode"></i>
+              <i class="fas" [class.fa-play]="true"></i>
             </div>
           </div>
-          <div class="episode-number-badge">{{ ep.episode_number }}</div>
-          <div *ngIf="ep.episode_number === episode" class="current-playing-indicator">
-            <i class="fas fa-circle"></i>
-            <span>Now Playing</span>
+          <div class="episode-number-badge">{{ ep.episode_number < 10 ? '0' + ep.episode_number : ep.episode_number }}</div>
+          <div *ngIf="(guideSeason === season && ep.episode_number === episode)" class="current-playing-indicator">
+            <span class="playing-bars" aria-hidden="true"><b></b><b></b><b></b></span>
+            <span>On screen</span>
           </div>
         </div>
         <div class="episode-info">
@@ -149,96 +150,39 @@
       </article>
     </div>
 
-    <div *ngIf="loadingEpisodes" class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading episodes...</p>
-    </div>
+    <div class="episode-empty" *ngIf="guideError" role="alert"><p>Episodes couldn't load.</p><button (click)="loadGuideSeason(guideSeason)">Try again</button></div>
+    <p class="episode-empty" *ngIf="guideDetails && !guideDetails.episodes?.length">No episodes available for this season.</p>
   </div>
+  <div *ngIf="mediaType === 'tv' && !showDetails && !mediaDetails && loading" class="loading-state" role="status"><span class="spinner"></span> Loading the episode guide...</div>
 
-  <!-- Details Section (for TV shows when details tab is active) -->
-  <div *ngIf="mediaType === 'tv' && showDetails && mediaDetails" class="details-section">
+  <section *ngIf="(mediaType === 'movie' || showDetails) && mediaDetails" class="details-section" aria-labelledby="about-title">
     <div class="details-content">
-      <div class="details-poster">
-        <img [src]="getPosterUrl(mediaDetails.poster_path)" [alt]="mediaDetails.name">
-      </div>
+      <div class="details-poster"><img [src]="getPosterUrl(mediaDetails.poster_path)" [alt]="mediaDetails.title || mediaDetails.name" loading="lazy"></div>
       <div class="details-info">
-        <h1>{{ mediaDetails.name }}</h1>
+        <h2 id="about-title">{{ mediaType === 'tv' ? 'behind the series.' : 'behind the film.' }}</h2>
         <div class="details-meta">
-          <span class="badge"><i class="fas fa-star"></i> {{ mediaDetails.vote_average | number:'1.1-1' }}</span>
-          <span class="badge">{{ mediaDetails.first_air_date | date:'yyyy' }}</span>
-          <span class="badge">{{ totalSeasons }} {{ totalSeasons === 1 ? 'Season' : 'Seasons' }}</span>
-          <span class="badge" *ngIf="mediaDetails.status">{{ mediaDetails.status }}</span>
-        </div>
-        <p class="overview">{{ mediaDetails.overview }}</p>
-        <div class="genres">
-          <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
-            <i class="fas fa-heart" *ngIf="isFavorite"></i>
-            <i class="far fa-heart" *ngIf="!isFavorite"></i>
-            <span>{{ isFavorite ? 'Favorited' : 'Favorite' }}</span>
-          </button>
-          <button class="action-btn" (click)="openRatingModal()" title="Rate this show">
-            <i class="fas fa-star"></i>
-            <span>{{ userRating > 0 ? 'Rated ' + userRating + '/5' : 'Rate' }}</span>
-          </button>
-          <button class="action-btn" (click)="openListModal()" title="Add to List">
-            <i class="fas fa-plus"></i>
-            <span>Add to List</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Movie Details (for movies) -->
-  <div *ngIf="mediaType === 'movie' && mediaDetails" class="details-section">
-    <div class="details-content">
-      <div class="details-poster">
-        <img [src]="getPosterUrl(mediaDetails.poster_path)" [alt]="mediaDetails.title">
-      </div>
-      <div class="details-info">
-        <h1>{{ mediaDetails.title }}</h1>
-        <div class="details-meta">
-          <span class="badge"><i class="fas fa-star"></i> {{ mediaDetails.vote_average | number:'1.1-1' }}</span>
-          <span class="badge">{{ mediaDetails.release_date | date:'yyyy' }}</span>
+          <span class="badge"><i class="fas fa-star" aria-hidden="true"></i> {{ mediaDetails.vote_average | number:'1.1-1' }} / 10</span>
+          <span class="badge">{{ (mediaDetails.release_date || mediaDetails.first_air_date) | date:'yyyy' }}</span>
           <span class="badge" *ngIf="mediaDetails.runtime">{{ mediaDetails.runtime }} min</span>
-          <span class="badge" *ngIf="mediaDetails.status">{{ mediaDetails.status }}</span>
+          <span class="badge" *ngIf="mediaType === 'tv'">{{ totalSeasons }} {{ totalSeasons === 1 ? 'season' : 'seasons' }}</span>
         </div>
         <p class="overview">{{ mediaDetails.overview }}</p>
-        <div class="genres">
-          <span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span>
-        </div>
-
-        <!-- Action Buttons -->
+        <div class="genres"><span class="genre-tag" *ngFor="let genre of mediaDetails.genres">{{ genre.name }}</span></div>
         <div class="action-buttons">
-          <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()" title="Add to Favorites">
-            <i class="fas fa-heart" *ngIf="isFavorite"></i>
-            <i class="far fa-heart" *ngIf="!isFavorite"></i>
-            <span>{{ isFavorite ? 'Favorited' : 'Favorite' }}</span>
-          </button>
-          <button class="action-btn" (click)="openRatingModal()" title="Rate this movie">
-            <i class="fas fa-star"></i>
-            <span>{{ userRating > 0 ? 'Rated ' + userRating + '/5' : 'Rate' }}</span>
-          </button>
-          <button class="action-btn" (click)="openListModal()" title="Add to List">
-            <i class="fas fa-plus"></i>
-            <span>Add to List</span>
-          </button>
+          <button class="action-btn" [class.active]="isFavorite" [attr.aria-pressed]="isFavorite" (click)="toggleFavorite()"><i [class]="isFavorite ? 'fas fa-heart' : 'far fa-heart'" aria-hidden="true"></i><span>{{ isFavorite ? 'Saved to favorites' : 'Favorite' }}</span></button>
+          <button class="action-btn" (click)="openRatingModal()"><i class="far fa-star" aria-hidden="true"></i><span>{{ userRating > 0 ? 'Your rating: ' + userRating + '/5' : 'Rate this title' }}</span></button>
+          <button class="action-btn" (click)="openListModal()"><i class="fas fa-plus" aria-hidden="true"></i><span>Add to collection</span></button>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Rating Modal -->
   <div class="modal-overlay" *ngIf="showRatingModal" (click)="closeRatingModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content" [appFocusTrap]="true" role="dialog" aria-modal="true" aria-label="Rate this title" (keydown.escape)="closeRatingModal()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Rate {{ mediaDetails?.title || mediaDetails?.name }}</h3>
-        <button class="close-btn" (click)="closeRatingModal()">
+        <button class="close-btn" aria-label="Close dialog" (click)="closeRatingModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -252,10 +196,10 @@
 
   <!-- List Selection Modal -->
   <div class="modal-overlay" *ngIf="showListModal" (click)="closeListModal()">
-    <div class="modal-content list-modal" (click)="$event.stopPropagation()">
+    <div class="modal-content list-modal" [appFocusTrap]="true" role="dialog" aria-modal="true" aria-label="Add to collection" (keydown.escape)="closeListModal()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Add to List</h3>
-        <button class="close-btn" (click)="closeListModal()">
+        <button class="close-btn" aria-label="Close dialog" (click)="closeListModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -267,7 +211,7 @@
           </div>
 
           <div *ngIf="userLists.length > 0" class="lists-grid">
-            <div *ngFor="let list of userLists" class="list-option" [class.selected]="isListSelected(list.id)"
+            <button type="button" *ngFor="let list of userLists" class="list-option" [attr.aria-pressed]="isListSelected(list.id)" [class.selected]="isListSelected(list.id)"
               (click)="toggleListSelection(list.id)">
               <i class="fas" [class.fa-check-circle]="isListSelected(list.id)"
                 [class.fa-circle]="!isListSelected(list.id)"></i>
@@ -275,7 +219,7 @@
                 <span class="list-title">{{ list.title }}</span>
                 <span class="list-count">{{ list.movies?.length || 0 }} movies</span>
               </div>
-            </div>
+            </button>
           </div>
 
           <button class="btn-new-list" (click)="toggleNewListForm()">
@@ -284,7 +228,7 @@
           </button>
 
           <div *ngIf="showNewListForm" class="new-list-form">
-            <input type="text" [(ngModel)]="newListTitle" placeholder="Enter list name..." class="list-input"
+            <input type="text" [(ngModel)]="newListTitle" aria-label="Collection name" placeholder="Collection name" class="list-input"
               (keyup.enter)="createNewList()">
             <button class="btn-create" (click)="createNewList()" [disabled]="!newListTitle.trim()">
               <i class="fas fa-check"></i>

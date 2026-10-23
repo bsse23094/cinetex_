@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError, map, switchMap } from 'rxjs';
+import { Observable, of, catchError, map, timeout } from 'rxjs';
 import { TMDBService } from './tmdb.service';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  failed?: boolean;
+  picks?: MovieRecommendation[];
 }
 
 export interface MovieRecommendation {
@@ -22,13 +24,13 @@ export interface MovieRecommendation {
 export class ChatbotService {
   private http = inject(HttpClient);
   private tmdb = inject(TMDBService);
-  
+
   // Cloudflare Worker endpoint - this proxies to Gemini API
   private readonly WORKER_URL = 'https://cinetex-chatbot.bsse23094.workers.dev';
-  
+
   private conversationHistory: ChatMessage[] = [];
-  
-  private systemPrompt = `You are CineBot, a helpful movie and TV show assistant for Cinetex - a streaming companion app. 
+
+  private systemPrompt = `You are the Cinetex film concierge, a thoughtful movie and TV show assistant for Cinetex - a streaming companion app.
 Your capabilities:
 - Recommend movies and TV shows based on user preferences
 - Provide details about movies, cast, directors, and plots
@@ -36,7 +38,7 @@ Your capabilities:
 - Answer questions about actors, filmographies, and movie trivia
 - Suggest what to watch based on user's mood or occasion
 
-Keep responses concise and engaging. When recommending movies, include the title and a brief reason why.
+Keep responses under 140 words, warm, specific, and spoiler-free. Suggest at most three titles, each with its release year and a one-sentence reason. Ask one useful follow-up question when preferences are unclear. Never invent availability on streaming services or claim live popularity data.
 If users ask about non-movie topics, politely redirect to movie-related help.
 Format movie titles in bold when mentioning them.`;
 
@@ -57,7 +59,7 @@ Format movie titles in bold when mentioning them.`;
     this.conversationHistory.push(userChatMessage);
 
     // Build conversation context for the API
-    const messages = this.conversationHistory.map(msg => ({
+    const messages = this.conversationHistory.filter(msg => !msg.failed).slice(-16).map(msg => ({
       role: msg.role,
       parts: [{ text: msg.content }]
     }));
@@ -68,7 +70,9 @@ Format movie titles in bold when mentioning them.`;
     };
 
     return this.http.post<{ response: string }>(this.WORKER_URL, requestBody).pipe(
+      timeout(20000),
       map(response => {
+        if (!response.response?.trim()) throw new Error('Empty response');
         const assistantMessage: ChatMessage = {
           role: 'assistant',
           content: response.response,
@@ -77,42 +81,25 @@ Format movie titles in bold when mentioning them.`;
         this.conversationHistory.push(assistantMessage);
         return response.response;
       }),
-      catchError(error => {
-        console.error('Chatbot error:', error);
-        // Fallback response
-        const fallbackResponse = this.getFallbackResponse(userMessage);
-        const assistantMessage: ChatMessage = {
-          role: 'assistant',
-          content: fallbackResponse,
-          timestamp: new Date()
-        };
-        this.conversationHistory.push(assistantMessage);
-        return of(fallbackResponse);
+      catchError(() => {
+        const content = "The concierge couldn't connect. Try again in a moment, or keep exploring the film index.";
+        this.conversationHistory.push({ role: 'assistant', content, timestamp: new Date(), failed: true });
+        return of(content);
       })
     );
   }
 
-  private getFallbackResponse(query: string): string {
-    const lowerQuery = query.toLowerCase();
-    
-    if (lowerQuery.includes('recommend') || lowerQuery.includes('suggest')) {
-      return "I'd love to help you find something great to watch! Try searching for a genre like 'action movies' or 'romantic comedies' using the search bar above. You can also browse popular titles on the home page.";
-    }
-    
-    if (lowerQuery.includes('hello') || lowerQuery.includes('hi') || lowerQuery.includes('hey')) {
-      return "Hello! 👋 I'm CineBot, your movie companion. I can help you find movies, get info about actors, or suggest what to watch. What are you in the mood for today?";
-    }
-    
-    if (lowerQuery.includes('help')) {
-      return "I can help you with:\n• **Movie recommendations** - Tell me what genre or mood you're in\n• **Movie details** - Ask about any movie's plot, cast, or director\n• **Actor info** - Learn about your favorite actors\n• **What to watch** - Get suggestions based on your preferences\n\nJust ask away!";
-    }
-    
-    return "I'm having trouble connecting right now. In the meantime, you can use the search bar to find movies or browse the popular titles on the home page!";
+  prepareRetry(): string | null {
+    if (!this.conversationHistory.at(-1)?.failed) return null;
+    this.conversationHistory.pop();
+    const lastUser = this.conversationHistory.pop();
+    return lastUser?.role === 'user' ? lastUser.content : null;
   }
 
   // Search for movies mentioned in chat
   searchMovieFromChat(title: string): Observable<MovieRecommendation[]> {
     return this.tmdb.searchMovies(title).pipe(
+      timeout(8000),
       map((response: any) => {
         return response.results?.slice(0, 5).map((movie: any) => ({
           id: movie.id,
