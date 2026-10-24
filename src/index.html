@@ -14,8 +14,46 @@
   <link rel="preload" href="assets/fonts/syne-800.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face{font-family:OpeningSerif;src:url('assets/fonts/instrument-serif-italic.woff2') format('woff2');font-style:italic;font-weight:400;font-display:swap}
+    body.cinetex-starting{margin:0;overflow:hidden;background:#050505}
+    #opening-screen{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#050605;color:#f0f1e9;overflow:hidden;transition:opacity .5s ease,visibility .5s;isolation:isolate}
+    #opening-screen::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 48%,#b1d75c0a,transparent 52%)}
+    .opening-content{display:grid;justify-items:center;padding:32px 24px;text-align:center;transition:transform .65s cubic-bezier(.22,1,.36,1)}
+    .opening-wordmark{display:flex;align-items:baseline;gap:8px;padding:0 .08em .12em 0;font:italic 400 clamp(78px,14vw,148px)/1.1 OpeningSerif,Georgia,serif;letter-spacing:-.065em;animation:opening-arrive .7s cubic-bezier(.22,1,.36,1) both}
+    .opening-dot{width:clamp(7px,1vw,11px);height:clamp(7px,1vw,11px);border-radius:50%;background:#d9f76c}
+    .opening-track{width:144px;height:1px;margin-top:28px;background:#e2ead31a;overflow:hidden}
+    .opening-track::after{content:'';display:block;height:100%;width:48%;background:linear-gradient(90deg,transparent,#d9f76c,transparent);animation:opening-progress 1.5s ease-in-out infinite}
+    .opening-status{margin:20px 0 0;color:#929c87;font:400 11px/1.6 system-ui,sans-serif;letter-spacing:.16em}
+    .opening-recovery{display:none;max-width:280px;margin-top:24px;color:#abb39f;font:400 13px/1.6 system-ui,sans-serif}
+    .opening-recovery p{margin:0 0 16px}
+    .opening-recovery a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 24px;border:1px solid #d9f76c50;border-radius:100px;color:#d9f76c;text-decoration:none;letter-spacing:.03em}
+    .opening-recovery a:focus-visible{outline:2px solid #d9f76c;outline-offset:5px}
+    #opening-screen[data-state=slow] .opening-recovery,#opening-screen[data-state=error] .opening-recovery{display:block}
+    #opening-screen[data-state=error] .opening-track,#opening-screen[data-state=error] .opening-status{display:none}
+    #opening-screen.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+    #opening-screen.is-leaving .opening-content{transform:translateY(-12px)}
+    @keyframes opening-arrive{from{opacity:0;transform:translateY(12px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+    @keyframes opening-progress{from{transform:translateX(-110%)}to{transform:translateX(310%)}}
+    @media(prefers-reduced-motion:reduce){#opening-screen,.opening-content{transition:none}.opening-wordmark,.opening-track::after{animation:none}.opening-track::after{width:100%}}
+  </style>
 </head>
-<body>
-  <app-root></app-root>
+<body class="cinetex-starting">
+  <div id="opening-screen" role="status" aria-label="Loading Cinetex" data-lenis-prevent>
+    <div class="opening-content">
+      <div class="opening-wordmark" aria-hidden="true">cinetex<span class="opening-dot"></span></div>
+      <div class="opening-track" aria-hidden="true"></div>
+      <p class="opening-status">Loading your cinema</p>
+      <div class="opening-recovery"><p id="opening-message">This is taking longer than usual.</p><a href="">Reload page</a></div>
+      <noscript><style>.opening-track,.opening-status{display:none}</style><p class="opening-status" style="display:block">Enable JavaScript to open Cinetex.</p></noscript>
+    </div>
+  </div>
+  <app-root inert aria-busy="true"></app-root>
+  <script>
+    window.setTimeout(function () {
+      var screen = document.getElementById('opening-screen');
+      if (screen && !screen.classList.contains('is-leaving') && !screen.dataset.state) screen.dataset.state = 'slow';
+    }, 12000);
+  </script>
 </body>
 </html>
