@@ -1,0 +1,2 @@
+// Keep published film URLs stable; add IDs here without rotating older entries out.
+export const indexedFilmIds = [1003596, 1058424, 1101412, 1148365, 1153576, 1228834, 1236045, 1248832, 1255833, 1291595, 1368337, 1377237, 1400837, 1400940, 1423191, 1514026, 1561726, 1712451, 687163, 969681] as const;

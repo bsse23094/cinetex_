@@ -1,4 +1,6 @@
-import { Component , OnInit } from '@angular/core';
+import { Component, OnInit, Optional } from '@angular/core';
+import { SeoService } from '../../../core/services/seo.service';
+import { timeout } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TMDBService } from '../../../core/services/tmdb.service';
 import { StorageService } from '../../../core/services/storage.service';
@@ -27,6 +29,7 @@ export class MovieDetailComponent implements OnInit {
     private router: Router,
     private tmdb : TMDBService,
     private storage : StorageService,
+    @Optional() private seo: SeoService | null = null,
   ) {}
 
   ngOnInit() {
@@ -40,8 +43,12 @@ export class MovieDetailComponent implements OnInit {
   private loadMovie(id: number) {
     this.loading = true;
     this.loadError = false;
-    this.tmdb.getMovieDetails(id).subscribe({
-      next: (data: any) => { this.movie = data; this.loading = false; },
+    this.tmdb.getMovieDetails(id).pipe(timeout(15000)).subscribe({
+      next: (data: any) => {
+        this.movie = data; this.loading = false;
+        this.seo?.setMetadata(`${data.title}${data.release_date ? ' (' + data.release_date.slice(0, 4) + ')' : ''} | Cinetex`, (data.overview || `Explore ${data.title} on Cinetex. Browse movie details, discover its genres and save it to your collection.`).slice(0, 160), `/movie/${id}`, false,
+          data.backdrop_path ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` : undefined);
+      },
       error: () => { this.loading = false; this.loadError = true; }
     });
   }

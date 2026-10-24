@@ -1,21 +1,15 @@
-import { RenderMode, ServerRoute } from '@angular/ssr';
+import { PrerenderFallback, RenderMode, ServerRoute } from '@angular/ssr';
+import { indexedFilmIds } from './indexed-film-ids';
 
-// Configure SSR/prerender behavior per route.
-// - Static routes: prerender
-// - Dynamic (with params): render on server at request time
+// GitHub Pages serves files, not a Node server. Entry points need real HTML.
 export const serverRoutes: ServerRoute[] = [
-  { path: '', renderMode: RenderMode.Prerender },
-  { path: 'search', renderMode: RenderMode.Prerender },
-  { path: 'shows', renderMode: RenderMode.Prerender },
-  { path: 'lists', renderMode: RenderMode.Prerender },
-  { path: 'favorites', renderMode: RenderMode.Prerender },
-  { path: 'rated', renderMode: RenderMode.Prerender },
-
-  // Dynamic parameterized routes: use Server (not Prerender)
-  { path: 'movie/:id', renderMode: RenderMode.Server },
-  { path: 'list/:id', renderMode: RenderMode.Server },
-  { path: 'watch/:id', renderMode: RenderMode.Server },
-
-  // Fallback: serve dynamically to avoid prerender param issues
-  { path: '**', renderMode: RenderMode.Server },
+  ...['', 'search', 'shows', 'about', 'privacy', 'terms', 'auth', 'lists', 'favorites', 'rated', 'profile']
+    .map((path): ServerRoute => ({ path, renderMode: RenderMode.Prerender })),
+  {
+    path: 'movie/:id', renderMode: RenderMode.Prerender, fallback: PrerenderFallback.Client,
+    async getPrerenderParams() {
+      return indexedFilmIds.map(id => ({ id: String(id) }));
+    }
+  },
+  { path: '**', renderMode: RenderMode.Client }
 ];

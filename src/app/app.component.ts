@@ -9,6 +9,7 @@ import type Lenis from 'lenis';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { ChatbotComponent } from './shared/components/chatbot/chatbot.component';
 import { AuthUser, SupabaseAuthService } from './core/services/supabase-auth.service';
+import { SeoService } from './core/services/seo.service';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +24,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   mobileMenuOpen = false;
   isAuthRoute = false;
   isPlayerRoute = false;
+  isDiscoveryRoute = true;
   headerQuery = '';
   @ViewChild('headerSearch') headerSearch?: ElementRef<HTMLInputElement>;
   authUser: AuthUser | null = null;
@@ -32,6 +34,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private zone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
   private auth = inject(SupabaseAuthService);
+  private seo = inject(SeoService);
   private observer?: MutationObserver;
   private lenis?: Lenis;
   private destroyed = false;
@@ -47,12 +50,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private authRouteSubscription?: Subscription;
 
   ngOnInit() {
+    this.seo.start();
+    this.isDiscoveryRoute = ['/', '/search'].includes(this.router.url.split('?')[0]);
     this.isAuthRoute = this.router.url.startsWith('/auth');
     this.isPlayerRoute = this.router.url.startsWith('/watch');
     this.headerQuery = this.router.parseUrl(this.router.url).queryParams['query'] || '';
     this.authRouteSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
+        this.isDiscoveryRoute = ['/', '/search'].includes(event.urlAfterRedirects.split('?')[0]);
         this.isAuthRoute = event.urlAfterRedirects.startsWith('/auth');
         this.isPlayerRoute = event.urlAfterRedirects.startsWith('/watch');
         this.headerQuery = this.router.parseUrl(event.urlAfterRedirects).queryParams['query'] || '';

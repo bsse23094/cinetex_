@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/search', pathMatch: 'full' },
+  { path: '', pathMatch: 'full', loadComponent: () => import('./features/movie/movie-search/movie-search.component').then(m => m.MovieSearchComponent) },
   { path: 'search', loadComponent: () => import('./features/movie/movie-search/movie-search.component').then(m => m.MovieSearchComponent) },
   { path: 'shows', loadComponent: () => import('./features/movie/movie-search/movie-search.component').then(m => m.MovieSearchComponent) },
   { path: 'movie/:id', loadComponent: () => import('./features/movie/movie-detail/movie-detail.component').then(m => m.MovieDetailComponent) },

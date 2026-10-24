@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Cinetex | Cinema, off script.</title>
+  <title>Cinetex — Discover Movies, TV Shows &amp; Anime</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
   <meta name="description" content="Discover films, series, and anime worth your evening. Build your collection and find your next great story with Cinetex.">
@@ -45,11 +45,13 @@
       <div class="opening-track" aria-hidden="true"></div>
       <p class="opening-status">Loading your cinema</p>
       <div class="opening-recovery"><p id="opening-message">This is taking longer than usual.</p><a href="">Reload page</a></div>
-      <noscript><style>.opening-track,.opening-status{display:none}</style><p class="opening-status" style="display:block">Enable JavaScript to open Cinetex.</p></noscript>
+      <noscript><style>#opening-screen{display:none}body.cinetex-starting{overflow:auto}</style></noscript>
     </div>
   </div>
-  <app-root inert aria-busy="true"></app-root>
+  <app-root></app-root>
   <script>
+    document.querySelector('app-root').setAttribute('inert', '');
+    document.querySelector('app-root').setAttribute('aria-busy', 'true');
     window.setTimeout(function () {
       var screen = document.getElementById('opening-screen');
       if (screen && !screen.classList.contains('is-leaving') && !screen.dataset.state) screen.dataset.state = 'slow';
