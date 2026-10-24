@@ -1,0 +1,1 @@
+import{S as i}from"./chunk-W42DJ2LG.js";var e=class s{transform(t,r="w185"){if(!t)return"assets/no-poster.svg";if(t.startsWith("http://")||t.startsWith("https://"))return t;let n=t.startsWith("/")?t:`/${t}`;return`https://image.tmdb.org/t/p/${r}${n}`}static \u0275fac=function(r){return new(r||s)};static \u0275pipe=i({name:"posterUrl",type:s,pure:!0})};export{e as a};
